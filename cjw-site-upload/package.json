@@ -1,0 +1,20 @@
+{
+  "name": "cjw-wjc-qwq-site",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "cjw-wjc-qwq.top 个人网站：博客 / 代码模板 / 题目解析 / 密码保护内部区",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "pages:dev": "wrangler pages dev dist --port 8788 --compatibility-date 2026-10-01",
+    "pages:deploy": "wrangler pages deploy dist --project-name cjw-wjc-qwq-site"
+  },
+  "dependencies": {
+    "astro": "^5.12.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.15.0"
+  }
+}

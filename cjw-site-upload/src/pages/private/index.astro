@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { formatDate } from '../../lib/format';
+
+const notes = (await getCollection('notes')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<Base title="内部区" description="三人内部资料，需登录查看">
+  <div class="container">
+    <header class="page-head">
+      <h1>🔒 内部区</h1>
+      <p>仅限三位维护者查看的内部资料。内容存在 <code>src/content/private/</code>，推送后自动更新。</p>
+    </header>
+
+    <div class="notice">
+      ✅ 已通过验证。当前共 {notes.length} 条内部笔记。写新笔记：在
+      <code>src/content/private/</code> 下新建 <code>.md</code> 文件并提交即可，格式见
+      <a href="/guide/">发布指南</a>。
+    </div>
+
+    <div class="card-list" style="margin-top:20px">
+      {
+        notes.map((note) => (
+          <a class="card" href={`/private/${note.id}/`}>
+            <div class="meta">
+              <span>{formatDate(note.data.date)}</span>
+              <span>{note.data.author}</span>
+              <span class="tag purple">内部</span>
+            </div>
+            <h3>{note.data.title}</h3>
+            <p>点击阅读 →</p>
+          </a>
+        ))
+      }
+    </div>
+
+    <form method="post" action="/api/logout" style="margin-top:26px">
+      <button class="btn ghost" type="submit">退出登录</button>
+    </form>
+  </div>
+</Base>

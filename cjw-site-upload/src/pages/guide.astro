@@ -1,0 +1,116 @@
+---
+import Base from '../layouts/Base.astro';
+
+const blogFm = `---
+title: 文章标题
+description: 一句话简介（会显示在列表卡片上）
+date: 2025-06-01
+author: CJW            # CJW / WJC / QWQ
+tags: [算法, 学习笔记]
+---
+
+正文从这里开始，用 Markdown 书写……
+`;
+
+const tplFm = `---
+title: 快速幂
+description: 计算 a^b mod p，附乘法逆元
+category: 数学          # 数据结构 / 图论 / 数学 / 字符串 / 动态规划 / 其他
+tags: [数论, 逆元]
+author: CJW
+date: 2025-06-01
+---
+
+## 代码
+
+\`\`\`cpp
+...
+\`\`\`
+`;
+
+const probFm = `---
+title: A+B Problem
+platform: 洛谷          # 洛谷 / Codeforces / AtCoder / LeetCode / USACO / 其他
+problemId: P1001
+problemUrl: https://www.luogu.com.cn/problem/P1001
+difficulty: 入门        # 入门 / 普及 / 提高 / 省选
+tags: [模拟]
+author: CJW
+date: 2025-06-01
+---
+
+## 题意简述
+...
+`;
+
+const noteFm = `---
+title: 笔记标题
+date: 2025-06-01
+author: CJW
+---
+
+内部笔记正文，只有登录后才能看到。
+`;
+---
+
+<Base title="发布指南" description="如何给本站添加博客、代码模板、题目解析和内部笔记">
+  <div class="container">
+    <header class="page-head">
+      <h1>📖 发布指南</h1>
+      <p>三个人都可以给网站加内容：在 GitHub 上写 Markdown 文件，提交后网站自动更新，全程免费。</p>
+    </header>
+
+    <article class="article" style="max-width:820px;padding-top:16px">
+      <div class="prose">
+        <h2>一、总体流程</h2>
+        <ol>
+          <li>打开网站仓库（GitHub），进入对应内容目录；</li>
+          <li>新建一个 <code>.md</code> 文件，按下面的格式填写开头信息（frontmatter）；</li>
+          <li>提交（commit）后，Cloudflare Pages 会自动构建并发布，约 1～2 分钟后生效；</li>
+          <li>也可以在本地用编辑器写完再推送，效果一样。</li>
+        </ol>
+        <div class="notice">
+          📁 内容目录：<code>src/content/blog/</code>（博客）、<code>src/content/templates/</code>（代码模板）、
+          <code>src/content/problems/</code>（题目解析）、<code>src/content/private/</code>（内部区笔记）。
+        </div>
+
+        <h2>二、博客文章</h2>
+        <p>文件名随意（建议英文小写，如 <code>my-first-post.md</code>），开头必须包含以下信息：</p>
+        <pre><code>{blogFm}</code></pre>
+        <p>正文用标准 Markdown：<code>## 二级标题</code>、<code>**加粗**</code>、<code>`行内代码`</code>、代码块用三个反引号 + 语言名（如 <code>cpp</code>）。</p>
+
+        <h2>三、代码模板</h2>
+        <p>放在 <code>src/content/templates/</code>，开头信息：</p>
+        <pre><code>{tplFm}</code></pre>
+        <p><code>category</code> 只能是：数据结构 / 图论 / 数学 / 字符串 / 动态规划 / 其他。</p>
+
+        <h2>四、题目解析</h2>
+        <p>放在 <code>src/content/problems/</code>，开头信息：</p>
+        <pre><code>{probFm}</code></pre>
+        <p><code>platform</code> 只能是：洛谷 / Codeforces / AtCoder / LeetCode / USACO / 其他；
+        <code>difficulty</code> 只能是：入门 / 普及 / 提高 / 省选。</p>
+
+        <h2>五、内部区笔记</h2>
+        <p>放在 <code>src/content/private/</code>，只有登录后才能访问：</p>
+        <pre><code>{noteFm}</code></pre>
+        <p>⚠️ 注意：除了 <code>private/</code> 目录，其它目录下的内容都是<b>公开可见</b>的，不要放密码、账号等敏感信息。</p>
+
+        <h2>六、修改管理密码</h2>
+        <p>在 Cloudflare 控制台 → Pages → 本项目 → <strong>Settings → Variables and Secrets</strong> 中修改 <code>PASSWORD</code>，保存后重新部署一次即可生效。</p>
+
+        <h2>七、本地预览（可选）</h2>
+        <pre><code>npm install
+npm run dev        # 开发预览 http://localhost:4321
+npm run pages:dev  # 带登录功能的完整预览 http://localhost:8788
+npm run build      # 构建到 dist/</code></pre>
+
+        <h2>八、常见问题</h2>
+        <ul>
+          <li><strong>提交后网站没变化？</strong> 去 Cloudflare Pages 的部署记录看构建日志，多半是 frontmatter 写错了（如 category 不在允许列表）。</li>
+          <li><strong>忘了密码？</strong> 到 Cloudflare 控制台查看环境变量（三人中任何一人有 Cloudflare 账号权限即可）。</li>
+          <li><strong>想换主题 / 加功能？</strong> 直接改 <code>src/</code> 下的代码，提交即可。</li>
+        </ul>
+      </div>
+    </article>
+  </div>
+</Base>

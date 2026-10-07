@@ -1,0 +1,68 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { formatDate } from '../../lib/format';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const allTags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+---
+
+<Base title="博客" description="三人的技术博客与学习笔记">
+  <div class="container">
+    <header class="page-head">
+      <h1>📝 博客</h1>
+      <p>技术笔记、学习心得、生活杂记。共 {posts.length} 篇。</p>
+    </header>
+
+    <div class="filters" id="tag-filters">
+      <button class="chip on" data-tag="all">全部</button>
+      {
+        allTags.map((t) => <button class="chip" data-tag={t}>{t}</button>)
+      }
+    </div>
+
+    <div class="card-list" id="post-list">
+      {
+        posts.map((post) => (
+          <a class="card" href={`/blog/${post.id}/`} data-tags={post.data.tags.join(',')}>
+            <div class="meta">
+              <span>{formatDate(post.data.date)}</span>
+              <span>{post.data.author}</span>
+              {
+                post.data.tags.map((t) => <span class="tag">{t}</span>)
+              }
+            </div>
+            <h3>{post.data.title}</h3>
+            <p>{post.data.description}</p>
+          </a>
+        ))
+      }
+    </div>
+    <div class="empty" id="empty-tip" style="display:none">没有符合条件的文章</div>
+  </div>
+</Base>
+
+<script>
+  const chips = document.querySelectorAll('#tag-filters .chip');
+  const cards = document.querySelectorAll('#post-list .card');
+  const empty = document.getElementById('empty-tip');
+
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      chips.forEach((c) => c.classList.remove('on'));
+      chip.classList.add('on');
+      const tag = chip.dataset.tag;
+      let shown = 0;
+      cards.forEach((card) => {
+        const tags = (card.dataset.tags || '').split(',');
+        const hit = tag === 'all' || tags.includes(tag);
+        (card as HTMLElement).style.display = hit ? '' : 'none';
+        if (hit) shown++;
+      });
+      if (empty) empty.style.display = shown ? 'none' : '';
+    });
+  });
+</script>

@@ -1,0 +1,24 @@
+---
+import { getCollection, render } from 'astro:content';
+import Article from '../../layouts/Article.astro';
+import { formatDate } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Article title={post.data.title} description={post.data.description}>
+  <div slot="meta" class="meta">
+    <span>{formatDate(post.data.date)}</span>
+    <span>作者：{post.data.author}</span>
+    {
+      post.data.tags.map((t) => <span class="tag accent">{t}</span>)
+    }
+  </div>
+  <Content />
+</Article>

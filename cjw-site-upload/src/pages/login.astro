@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="登录" description="内部区登录">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="lock">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+          <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+        </svg>
+      </div>
+      <h1>内部区登录</h1>
+      <p>本入口仅供本站三位维护者使用，输入管理密码继续。</p>
+      <p class="error" id="login-error" style="display:none">❌ 密码错误，请重试。</p>
+      <form method="post" action="/api/login">
+        <input type="hidden" name="next" id="next-input" value="/private/" />
+        <input
+          type="password"
+          name="password"
+          placeholder="管理密码"
+          autocomplete="current-password"
+          required
+          autofocus
+        />
+        <button class="btn primary" type="submit" style="justify-content:center">
+          进入内部区
+        </button>
+      </form>
+      <p style="margin:18px 0 0;font-size:12.5px">
+        <a href="/">← 返回首页</a>
+      </p>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const nextInput = document.getElementById('next-input') as HTMLInputElement | null;
+  if (nextInput && params.get('next')) nextInput.value = params.get('next')!;
+  if (params.get('error') === '1') {
+    const err = document.getElementById('login-error');
+    if (err) err.style.display = '';
+  }
+</script>

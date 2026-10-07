@@ -1,0 +1,97 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="站内搜索" description="搜索全站博客、代码模板与题目解析">
+  <div class="container">
+    <header class="page-head" style="text-align:center">
+      <h1>🔍 站内搜索</h1>
+      <p>搜索博客、代码模板、题目解析（内部区内容不会被索引）。</p>
+    </header>
+
+    <div class="search-box">
+      <span class="icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path>
+        </svg>
+      </span>
+      <input type="text" id="search-input" placeholder="输入关键词，如：线段树 / 并查集 / 快速幂…" autofocus />
+    </div>
+
+    <div id="results"></div>
+    <p class="search-hint" id="hint">输入关键词开始搜索</p>
+  </div>
+</Base>
+
+<script>
+  interface Item {
+    type: string;
+    title: string;
+    desc: string;
+    tags: string[];
+    url: string;
+    text: string;
+  }
+
+  let index: Item[] | null = null;
+  const input = document.getElementById('search-input') as HTMLInputElement;
+  const results = document.getElementById('results') as HTMLDivElement;
+  const hint = document.getElementById('hint') as HTMLParagraphElement;
+
+  function render(list: Item[], query: string) {
+    results.innerHTML = '';
+    if (!list.length) {
+      hint.textContent = `没有找到与「${query}」相关的内容`;
+      hint.style.display = '';
+      return;
+    }
+    hint.style.display = 'none';
+    list.slice(0, 30).forEach((item) => {
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.innerHTML = `
+        <h3><a href="${item.url}">${item.title}</a> <span class="tag accent type">${item.type}</span></h3>
+        <p class="desc">${item.desc}${item.tags.length ? '　·　' + item.tags.join(' / ') : ''}</p>
+      `;
+      results.appendChild(div);
+    });
+  }
+
+  function search() {
+    const q = input.value.trim().toLowerCase();
+    if (!q) {
+      results.innerHTML = '';
+      hint.textContent = '输入关键词开始搜索';
+      hint.style.display = '';
+      return;
+    }
+    if (!index) return;
+    const terms = q.split(/\s+/).filter(Boolean);
+    const list = index
+      .map((item) => {
+        const hay = (item.title + ' ' + item.desc + ' ' + item.tags.join(' ') + ' ' + item.text).toLowerCase();
+        const score = terms.reduce((s, t) => (hay.includes(t) ? s + 1 : s), 0);
+        return { item, score };
+      })
+      .filter((x) => x.score === terms.length)
+      .sort((a, b) => b.score - a.score)
+      .map((x) => x.item);
+    render(list, input.value.trim());
+  }
+
+  fetch('/search-index.json')
+    .then((r) => r.json())
+    .then((data: Item[]) => {
+      index = data;
+      search();
+    })
+    .catch(() => {
+      hint.textContent = '搜索索引加载失败，请稍后刷新重试';
+    });
+
+  let timer: number | undefined;
+  input.addEventListener('input', () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(search, 150);
+  });
+</script>

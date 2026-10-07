@@ -1,0 +1,93 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { formatDate } from '../../lib/format';
+
+const problems = (await getCollection('problems')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const platforms = [...new Set(problems.map((p) => p.data.platform))];
+const difficulties = [...new Set(problems.map((p) => p.data.difficulty))];
+---
+
+<Base title="题目解析" description="题目链接与个人思路、代码解析">
+  <div class="container">
+    <header class="page-head">
+      <h1>🏷️ 题目解析</h1>
+      <p>题目链接 + 个人思路与代码。共 {problems.length} 道，可按平台 / 难度筛选。</p>
+    </header>
+
+    <div class="filters" id="platform-filters">
+      <button class="chip on" data-key="platform" data-val="all">全部平台</button>
+      {
+        platforms.map((p) => <button class="chip" data-key="platform" data-val={p}>{p}</button>)
+      }
+    </div>
+    <div class="filters" id="difficulty-filters" style="margin-top:-8px">
+      <button class="chip on" data-key="difficulty" data-val="all">全部难度</button>
+      {
+        difficulties.map((d) => <button class="chip" data-key="difficulty" data-val={d}>{d}</button>)
+      }
+    </div>
+
+    <div class="card-list" id="prob-list">
+      {
+        problems.map((p) => (
+          <a
+            class="card"
+            href={`/problems/${p.id}/`}
+            data-platform={p.data.platform}
+            data-difficulty={p.data.difficulty}
+          >
+            <div class="meta">
+              <span class="tag accent">{p.data.platform}</span>
+              <span class="tag">{p.data.difficulty}</span>
+              <span>{p.data.problemId}</span>
+              <span>{formatDate(p.data.date)}</span>
+            </div>
+            <h3>{p.data.title}</h3>
+            <p>
+              {p.data.tags.join(' · ')}
+            </p>
+          </a>
+        ))
+      }
+    </div>
+    <div class="empty" id="empty-tip" style="display:none">没有符合条件的题目</div>
+  </div>
+</Base>
+
+<script>
+  const groups: Record<string, HTMLButtonElement[]> = {
+    platform: Array.from(document.querySelectorAll('#platform-filters .chip')),
+    difficulty: Array.from(document.querySelectorAll('#difficulty-filters .chip')),
+  };
+  const cards = document.querySelectorAll('#prob-list .card');
+  const empty = document.getElementById('empty-tip');
+  const state: Record<string, string> = { platform: 'all', difficulty: 'all' };
+
+  function apply() {
+    let shown = 0;
+    cards.forEach((card) => {
+      const el = card as HTMLElement;
+      const hit =
+        (state.platform === 'all' || el.dataset.platform === state.platform) &&
+        (state.difficulty === 'all' || el.dataset.difficulty === state.difficulty);
+      el.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    });
+    if (empty) empty.style.display = shown ? 'none' : '';
+  }
+
+  Object.entries(groups).forEach(([key, chips]) => {
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        chips.forEach((c) => c.classList.remove('on'));
+        chip.classList.add('on');
+        state[key] = chip.dataset.val ?? 'all';
+        apply();
+      });
+    });
+  });
+</script>

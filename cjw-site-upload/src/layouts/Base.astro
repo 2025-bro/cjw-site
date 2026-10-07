@@ -1,0 +1,77 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const siteName = 'cjw-wjc-qwq 的代码小站';
+const pageTitle = title ? `${title} - ${siteName}` : `${siteName} · 博客 / 代码模板 / 题目解析`;
+const pageDesc =
+  description ??
+  '三人共同维护的免费个人网站：技术博客、算法代码模板、题目链接与个人解析，由 Cloudflare Pages 零成本托管。';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <script is:inline>
+      // 提前设置主题，避免闪烁
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var dark = saved
+            ? saved === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      const toggle = document.getElementById('theme-toggle');
+      const menuBtn = document.getElementById('menu-btn');
+      const nav = document.getElementById('site-nav');
+
+      toggle?.addEventListener('click', () => {
+        const root = document.documentElement;
+        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try {
+          localStorage.setItem('theme', next);
+        } catch (e) {
+          /* ignore */
+        }
+      });
+
+      menuBtn?.addEventListener('click', () => {
+        nav?.classList.toggle('open');
+      });
+      nav?.querySelectorAll('a').forEach((a) =>
+        a.addEventListener('click', () => nav.classList.remove('open')),
+      );
+    </script>
+  </body>
+</html>

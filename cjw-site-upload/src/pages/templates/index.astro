@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { formatDate } from '../../lib/format';
+
+const templates = (await getCollection('templates')).sort(
+  (a, b) => a.data.category.localeCompare(b.data.category, 'zh-CN') || a.data.title.localeCompare(b.data.title, 'zh-CN'),
+);
+
+const categories = [...new Set(templates.map((t) => t.data.category))];
+---
+
+<Base title="代码模板" description="常用算法与数据结构的 C++ 代码模板">
+  <div class="container">
+    <header class="page-head">
+      <h1>🧩 代码模板</h1>
+      <p>常用算法与数据结构的 C++ 模板，按类别整理，共 {templates.length} 个。</p>
+    </header>
+
+    <div class="filters" id="cat-filters">
+      <button class="chip on" data-cat="all">全部</button>
+      {
+        categories.map((c) => <button class="chip" data-cat={c}>{c}</button>)
+      }
+    </div>
+
+    <div class="search-box" style="max-width:none;margin:0 0 8px">
+      <span class="icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path>
+        </svg>
+      </span>
+      <input type="text" id="tpl-search" placeholder="输入关键词快速筛选模板…" />
+    </div>
+
+    <div class="card-list" id="tpl-list">
+      {
+        templates.map((t) => (
+          <a class="card" href={`/templates/${t.id}/`} data-cat={t.data.category} data-key={t.data.title + ' ' + t.data.tags.join(' ')}>
+            <div class="meta">
+              <span class="tag purple">{t.data.category}</span>
+              <span>{t.data.author}</span>
+              <span>{formatDate(t.data.date)}</span>
+            </div>
+            <h3>{t.data.title}</h3>
+            <p>{t.data.description}</p>
+          </a>
+        ))
+      }
+    </div>
+    <div class="empty" id="empty-tip" style="display:none">没有符合条件的模板</div>
+  </div>
+</Base>
+
+<script>
+  const chips = document.querySelectorAll('#cat-filters .chip');
+  const cards = document.querySelectorAll('#tpl-list .card');
+  const search = document.getElementById('tpl-search') as HTMLInputElement | null;
+  const empty = document.getElementById('empty-tip');
+  let curCat = 'all';
+
+  function apply() {
+    const kw = (search?.value ?? '').trim().toLowerCase();
+    let shown = 0;
+    cards.forEach((card) => {
+      const cat = (card as HTMLElement).dataset.cat;
+      const key = ((card as HTMLElement).dataset.key ?? '').toLowerCase();
+      const hit = (curCat === 'all' || cat === curCat) && (!kw || key.includes(kw));
+      (card as HTMLElement).style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    });
+    if (empty) empty.style.display = shown ? 'none' : '';
+  }
+
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      chips.forEach((c) => c.classList.remove('on'));
+      chip.classList.add('on');
+      curCat = (chip as HTMLElement).dataset.cat ?? 'all';
+      apply();
+    });
+  });
+  search?.addEventListener('input', apply);
+</script>
