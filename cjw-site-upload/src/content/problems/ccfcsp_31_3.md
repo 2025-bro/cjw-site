@@ -1,10 +1,10 @@
 ---
 title: 后缀表达式求偏导数/导数
-platform: CCFCSP
+platform: 其他
 problemId:  acwing-5299
 problemUrl: https://www.acwing.com/file_system/file/content/whole/index/content/10768525/
-difficulty: 中
-tags: [simulation,]
+difficulty: 普及
+tags: [模拟,字符串]
 author: Jeonghong Song
 date:  2026-10-09
 ---
