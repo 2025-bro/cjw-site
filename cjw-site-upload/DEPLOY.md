@@ -80,4 +80,4 @@
 
 - **构建失败**：去 Cloudflare Pages 的部署记录看日志，常见原因是 Markdown frontmatter 写错（category/platform/difficulty 必须在允许列表）。
 - **国内访问慢 / 打不开**：Cloudflare 在国内速度一般但通常可用；若长时间异常，可后续考虑把 DNS 迁到 Cloudflare 开启加速（仍免费），或换 Vercel 备用。
-- **忘记 Cloudflare 密码**：走 Cloudflare 找回流程；三人中建议至少两人知道账号密码。
+- **忘记 Cloudflare 密码**：走 Cloudflare 找回流程；三人中建议至少两人知道账号密码。  在微信里。
