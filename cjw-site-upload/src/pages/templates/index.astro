@@ -2,62 +2,21 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { formatDate } from '../../lib/format';
+import { TAXONOMY, FALLBACK_MAJOR } from '../../data/taxonomy';
 
 /**
- * 代码模板分类表（参照 OI Wiki 的专题结构）：大类 → 小类
- * 写模板时 category 可以填：
+ * 分类规则说明（分类表本身在 src/data/taxonomy.ts，要新增分类改那个文件）
+ * category 三种写法：
  *   1) 小类名，例如 category: 线段树            —— 自动归到「数据结构」大类下
  *   2) 大类名，例如 category: 图论              —— 只归到大类
  *   3) 显式层级，例如 category: 图论 / 网络流    —— 同时指定大类和小类
- * 分类表里没有的名字也不会报错，会作为新的大类/小类自动出现。
+ * 表里没有的名字不会报错，会作为新的大类出现。
  */
-const TAXONOMY: Record<string, string[]> = {
-  基础算法: [
-    '枚举与模拟',
-    '贪心',
-    '二分与三分',
-    '排序',
-    '前缀和与差分',
-    '位运算',
-    '高精度',
-    '离散化',
-    '倍增',
-    '构造',
-  ],
-  数据结构: [
-    '并查集',
-    '堆与优先队列',
-    '树状数组',
-    '线段树',
-    'ST 表',
-    '平衡树',
-    '可持久化',
-    '分块与莫队',
-    '树链剖分',
-  ],
-  图论: [
-    '图的存储与遍历',
-    '最短路',
-    '最小生成树',
-    '拓扑排序',
-    '强连通分量',
-    '二分图',
-    '网络流',
-    '树上问题',
-    '差分约束',
-    '欧拉路',
-  ],
-  数学: ['数论', '组合数学', '线性代数', '概率与期望', '博弈论', '多项式', '数值方法'],
-  字符串: ['KMP', 'Z 函数', 'Manacher', '字符串哈希', '后缀数组', '字典树', 'AC 自动机', '最小表示法'],
-  动态规划: ['线性 DP', '背包', '区间 DP', '树形 DP', '状压 DP', '数位 DP', 'DP 优化'],
-  计算几何: ['基础几何', '凸包', '旋转卡壳', '扫描线'],
-  杂项: ['随机化', '模拟退火', '对拍与调试', '读入优化', '其他技巧'],
-};
 
 /** 把模板的 category 解析成「大类 + 小类」 */
 function classify(raw: string): { major: string; minor: string } {
   const cat = (raw ?? '').trim();
-  if (!cat) return { major: '未分类', minor: '' };
+  if (!cat) return { major: FALLBACK_MAJOR, minor: '' };
 
   // 显式层级写法：大类 / 小类（也兼容 > · | 分隔）
   const parts = cat
@@ -82,7 +41,7 @@ const items = templates.map((entry) => {
   return { entry, major, minor };
 });
 
-const MAJOR_ORDER = [...Object.keys(TAXONOMY), '未分类'];
+const MAJOR_ORDER = [...Object.keys(TAXONOMY), FALLBACK_MAJOR];
 const groups = [...new Set(items.map((i) => i.major))]
   .sort((a, b) => {
     const ia = MAJOR_ORDER.indexOf(a);
@@ -110,6 +69,7 @@ const minorTotal = Object.values(TAXONOMY).reduce((n, list) => n + list.length, 
       <p>
         按 <strong>大类 → 小类</strong> 两级整理，共 {templates.length} 个模板、{groups.length} 个大类。
         分类参照 <a href="https://oi-wiki.org/" target="_blank" rel="noopener">OI Wiki</a> 的专题划分。
+        新增模板时在文件开头写 <code>category: 小类名</code> 即可自动归位。
       </p>
     </header>
 
@@ -130,6 +90,7 @@ const minorTotal = Object.values(TAXONOMY).reduce((n, list) => n + list.length, 
       <p class="taxonomy-tip">
         写模板时 <code>category</code> 填小类名（如 <code>线段树</code>）会自动归入对应大类；填
         <code>大类 / 小类</code>（如 <code>图论 / 网络流</code>）可显式指定层级；清单里没有的名字也能正常使用，会自动出现在分类里。
+        完整分类表在 <code>src/data/taxonomy.ts</code>，要新增分类改那里；新建模板可复制 <code>src/content/templates/空白模板</code>。
       </p>
     </details>
 

@@ -83,6 +83,7 @@ author: CJW
         <p>放在 <code>src/content/templates/</code>，开头信息：</p>
         <pre><code>{tplFm}</code></pre>
         <p><code>category</code> 采用<strong>两级分类</strong>（参照 OI Wiki 的专题划分）：填<strong>小类名</strong>（如 <code>线段树</code>）会自动归入对应大类，也可以写成 <code>大类 / 小类</code>（如 <code>图论 / 网络流</code>）。完整分类清单见 <a href="/templates/">代码模板</a>页顶部的「分类总览」；清单里没有的名字也能正常使用，不会报错。</p>
+        <p>新建模板最省事的做法：复制 <code>src/content/templates/空白模板</code>，改名为英文 <code>.md</code>，填好 <code>title</code>、<code>description</code>、<code>category</code> 即可（该文件里已附完整小类清单）。<strong>想新增分类</strong>就编辑 <code>src/data/taxonomy.ts</code>（分类表只在这一个文件里），在对应大类下加一个名字；不改代码、直接写新名字也行，它会作为一个新大类出现。</p>
 
         <h2>四、题目解析</h2>
         <p>放在 <code>src/content/problems/</code>，开头信息：</p>
