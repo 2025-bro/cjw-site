@@ -3,7 +3,7 @@ title: 后缀表达式求偏导数/导数
 platform: CCFCSP
 problemId:  acwing-5299
 problemUrl: https://www.acwing.com/file_system/file/content/whole/index/content/10768525/
-difficulty: 1400
+difficulty: 中
 tags: [simulation,]
 author: Jeonghong Song
 date:  2026-10-09
