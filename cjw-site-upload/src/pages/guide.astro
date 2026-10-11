@@ -15,7 +15,7 @@ tags: [算法, 学习笔记]
 const tplFm = `---
 title: 快速幂
 description: 计算 a^b mod p，附乘法逆元
-category: 数学          # 数据结构 / 图论 / 数学 / 字符串 / 动态规划 / 其他
+category: 数论          # 填小类名即可，会自动归入「数学」大类；也可写「图论 / 网络流」
 tags: [数论, 逆元]
 author: CJW
 date: 2025-06-01
@@ -30,10 +30,10 @@ date: 2025-06-01
 
 const probFm = `---
 title: A+B Problem
-platform: 洛谷          # 洛谷 / Codeforces / AtCoder / LeetCode / USACO / 其他
+platform: 洛谷          # 自由填写，例如 洛谷 / Codeforces / CCF CSP / AcWing / 牛客
 problemId: P1001
 problemUrl: https://www.luogu.com.cn/problem/P1001
-difficulty: 入门        # 入门 / 普及 / 提高 / 省选
+difficulty: 入门        # 自由填写，例如 入门 / 普及+ / 提高+ / Div.2 C / 省一
 tags: [模拟]
 author: CJW
 date: 2025-06-01
@@ -82,13 +82,12 @@ author: CJW
         <h2>三、代码模板</h2>
         <p>放在 <code>src/content/templates/</code>，开头信息：</p>
         <pre><code>{tplFm}</code></pre>
-        <p><code>category</code> 只能是：数据结构 / 图论 / 数学 / 字符串 / 动态规划 / 其他。</p>
+        <p><code>category</code> 采用<strong>两级分类</strong>（参照 OI Wiki 的专题划分）：填<strong>小类名</strong>（如 <code>线段树</code>）会自动归入对应大类，也可以写成 <code>大类 / 小类</code>（如 <code>图论 / 网络流</code>）。完整分类清单见 <a href="/templates/">代码模板</a>页顶部的「分类总览」；清单里没有的名字也能正常使用，不会报错。</p>
 
         <h2>四、题目解析</h2>
         <p>放在 <code>src/content/problems/</code>，开头信息：</p>
         <pre><code>{probFm}</code></pre>
-        <p><code>platform</code> 只能是：洛谷 / Codeforces / AtCoder / LeetCode / USACO / 其他；
-        <code>difficulty</code> 只能是：入门 / 普及 / 提高 / 省选。</p>
+        <p><code>platform</code>（平台）和 <code>difficulty</code>（难度）都<strong>可以自由填写</strong>：<code>CCF CSP</code>、<code>AcWing</code>、<code>牛客</code>、<code>提高+/省选−</code>、<code>Div.2 C</code>、<code>中</code> 都行，题目列表页的筛选按钮会自动按你实际填过的值生成。</p>
 
         <h2>五、内部区笔记</h2>
         <p>放在 <code>src/content/private/</code>，只有登录后才能访问：</p>
@@ -106,7 +105,7 @@ npm run build      # 构建到 dist/</code></pre>
 
         <h2>八、常见问题</h2>
         <ul>
-          <li><strong>提交后网站没变化？</strong> 去 Cloudflare Pages 的部署记录看构建日志，多半是 frontmatter 写错了（如 category 不在允许列表）。</li>
+          <li><strong>提交后网站没变化？</strong> 去 Cloudflare Pages 的部署记录看构建日志。现在字段留空、日期写错、分类自由填写都不会导致失败，报错通常来自 YAML 语法问题（例如标题里出现了没加引号的冒号 <code>:</code>，写成 <code>title: "A+B: 题解"</code> 即可）。</li>
           <li><strong>忘了密码？</strong> 到 Cloudflare 控制台查看环境变量（三人中任何一人有 Cloudflare 账号权限即可）。</li>
           <li><strong>想换主题 / 加功能？</strong> 直接改 <code>src/</code> 下的代码，提交即可。</li>
         </ul>

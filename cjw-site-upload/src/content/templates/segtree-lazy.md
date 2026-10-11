@@ -1,7 +1,7 @@
 ---
 title: 线段树（区间加 + 区间求和）
 description: 带懒标记的线段树模板，支持区间加法与区间求和查询
-category: 数据结构
+category: 线段树
 tags: [线段树, 懒标记, RMQ]
 author: WJC
 date: 2026-09-25

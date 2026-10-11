@@ -1,7 +1,7 @@
 ---
 title: Dijkstra 最短路（堆优化）
 description: 单源最短路模板，O((n+m) log n)，支持非负权图
-category: 图论
+category: 最短路
 tags: [最短路, 优先队列, Dijkstra]
 author: QWQ
 date: 2026-09-27

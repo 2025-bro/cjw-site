@@ -1,7 +1,7 @@
 ---
 title: 并查集（DSU）
 description: 路径压缩 + 按大小合并，支持查询连通性与合并集合
-category: 数据结构
+category: 并查集
 tags: [并查集, 连通性, Kruskal]
 author: CJW
 date: 2026-09-22

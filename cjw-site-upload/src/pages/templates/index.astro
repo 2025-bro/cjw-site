@@ -3,28 +3,150 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { formatDate } from '../../lib/format';
 
-const templates = (await getCollection('templates')).sort(
-  (a, b) => a.data.category.localeCompare(b.data.category, 'zh-CN') || a.data.title.localeCompare(b.data.title, 'zh-CN'),
-);
+/**
+ * 代码模板分类表（参照 OI Wiki 的专题结构）：大类 → 小类
+ * 写模板时 category 可以填：
+ *   1) 小类名，例如 category: 线段树            —— 自动归到「数据结构」大类下
+ *   2) 大类名，例如 category: 图论              —— 只归到大类
+ *   3) 显式层级，例如 category: 图论 / 网络流    —— 同时指定大类和小类
+ * 分类表里没有的名字也不会报错，会作为新的大类/小类自动出现。
+ */
+const TAXONOMY: Record<string, string[]> = {
+  基础算法: [
+    '枚举与模拟',
+    '贪心',
+    '二分与三分',
+    '排序',
+    '前缀和与差分',
+    '位运算',
+    '高精度',
+    '离散化',
+    '倍增',
+    '构造',
+  ],
+  数据结构: [
+    '并查集',
+    '堆与优先队列',
+    '树状数组',
+    '线段树',
+    'ST 表',
+    '平衡树',
+    '可持久化',
+    '分块与莫队',
+    '树链剖分',
+  ],
+  图论: [
+    '图的存储与遍历',
+    '最短路',
+    '最小生成树',
+    '拓扑排序',
+    '强连通分量',
+    '二分图',
+    '网络流',
+    '树上问题',
+    '差分约束',
+    '欧拉路',
+  ],
+  数学: ['数论', '组合数学', '线性代数', '概率与期望', '博弈论', '多项式', '数值方法'],
+  字符串: ['KMP', 'Z 函数', 'Manacher', '字符串哈希', '后缀数组', '字典树', 'AC 自动机', '最小表示法'],
+  动态规划: ['线性 DP', '背包', '区间 DP', '树形 DP', '状压 DP', '数位 DP', 'DP 优化'],
+  计算几何: ['基础几何', '凸包', '旋转卡壳', '扫描线'],
+  杂项: ['随机化', '模拟退火', '对拍与调试', '读入优化', '其他技巧'],
+};
 
-const categories = [...new Set(templates.map((t) => t.data.category))];
+/** 把模板的 category 解析成「大类 + 小类」 */
+function classify(raw: string): { major: string; minor: string } {
+  const cat = (raw ?? '').trim();
+  if (!cat) return { major: '未分类', minor: '' };
+
+  // 显式层级写法：大类 / 小类（也兼容 > · | 分隔）
+  const parts = cat
+    .split(/\s*[/>·|]\s*/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (parts.length >= 2) return { major: parts[0], minor: parts.slice(1).join(' · ') };
+
+  // 命中分类表
+  for (const [major, minors] of Object.entries(TAXONOMY)) {
+    if (minors.includes(cat)) return { major, minor: cat };
+    if (major === cat) return { major, minor: '' };
+  }
+
+  // 分类表之外的自定义名字：自己成为一个大类
+  return { major: cat, minor: '' };
+}
+
+const templates = await getCollection('templates');
+const items = templates.map((entry) => {
+  const { major, minor } = classify(entry.data.category);
+  return { entry, major, minor };
+});
+
+const MAJOR_ORDER = [...Object.keys(TAXONOMY), '未分类'];
+const groups = [...new Set(items.map((i) => i.major))]
+  .sort((a, b) => {
+    const ia = MAJOR_ORDER.indexOf(a);
+    const ib = MAJOR_ORDER.indexOf(b);
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib) || a.localeCompare(b, 'zh-CN');
+  })
+  .map((major) => ({
+    major,
+    items: items
+      .filter((i) => i.major === major)
+      .sort(
+        (a, b) =>
+          (a.minor || '').localeCompare(b.minor || '', 'zh-CN') ||
+          a.entry.data.title.localeCompare(b.entry.data.title, 'zh-CN'),
+      ),
+  }));
+
+const minorTotal = Object.values(TAXONOMY).reduce((n, list) => n + list.length, 0);
 ---
 
-<Base title="代码模板" description="常用算法与数据结构的 C++ 代码模板">
+<Base title="代码模板" description="参照 OI Wiki 专题结构整理的两级分类算法代码模板">
   <div class="container">
     <header class="page-head">
       <h1>🧩 代码模板</h1>
-      <p>常用算法与数据结构的 C++ 模板，按类别整理，共 {templates.length} 个。</p>
+      <p>
+        按 <strong>大类 → 小类</strong> 两级整理，共 {templates.length} 个模板、{groups.length} 个大类。
+        分类参照 <a href="https://oi-wiki.org/" target="_blank" rel="noopener">OI Wiki</a> 的专题划分。
+      </p>
     </header>
 
-    <div class="filters" id="cat-filters">
-      <button class="chip on" data-cat="all">全部</button>
+    <details class="taxonomy">
+      <summary>
+        📚 分类总览（{Object.keys(TAXONOMY).length} 个大类 · {minorTotal} 个小类，点开查看完整清单）
+      </summary>
+      <div class="taxonomy-grid">
+        {
+          Object.entries(TAXONOMY).map(([major, minors]) => (
+            <div class="taxonomy-item">
+              <strong>{major}</strong>
+              <span>{minors.join(' · ')}</span>
+            </div>
+          ))
+        }
+      </div>
+      <p class="taxonomy-tip">
+        写模板时 <code>category</code> 填小类名（如 <code>线段树</code>）会自动归入对应大类；填
+        <code>大类 / 小类</code>（如 <code>图论 / 网络流</code>）可显式指定层级；清单里没有的名字也能正常使用，会自动出现在分类里。
+      </p>
+    </details>
+
+    <div class="filters" id="major-filters">
+      <button class="chip on" data-major="all">全部（{templates.length}）</button>
       {
-        categories.map((c) => <button class="chip" data-cat={c}>{c}</button>)
+        groups.map((g) => (
+          <button class="chip" data-major={g.major}>
+            {g.major}（{g.items.length}）
+          </button>
+        ))
       }
     </div>
 
-    <div class="search-box" style="max-width:none;margin:0 0 8px">
+    <div class="filters" id="minor-filters" style="display:none"></div>
+
+    <div class="search-box" style="max-width:none;margin:0 0 22px">
       <span class="icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path>
@@ -33,50 +155,174 @@ const categories = [...new Set(templates.map((t) => t.data.category))];
       <input type="text" id="tpl-search" placeholder="输入关键词快速筛选模板…" />
     </div>
 
-    <div class="card-list" id="tpl-list">
+    <div id="tpl-list">
       {
-        templates.map((t) => (
-          <a class="card" href={`/templates/${t.id}/`} data-cat={t.data.category} data-key={t.data.title + ' ' + t.data.tags.join(' ')}>
-            <div class="meta">
-              <span class="tag purple">{t.data.category}</span>
-              <span>{t.data.author}</span>
-              <span>{formatDate(t.data.date)}</span>
+        groups.map((g) => (
+          <section class="tpl-group" data-major={g.major}>
+            <div class="section-head">
+              <h2>{g.major}</h2>
+              <span class="group-count">{g.items.length} 个模板</span>
             </div>
-            <h3>{t.data.title}</h3>
-            <p>{t.data.description}</p>
-          </a>
+            <div class="card-list">
+              {g.items.map((it) => (
+                <a
+                  class="card"
+                  href={`/templates/${it.entry.id}/`}
+                  data-major={g.major}
+                  data-minor={it.minor}
+                  data-key={`${it.entry.data.title} ${it.minor} ${g.major} ${it.entry.data.tags.join(' ')}`}
+                >
+                  <div class="meta">
+                    <span class="tag purple">{it.minor || g.major}</span>
+                    <span>{it.entry.data.author}</span>
+                    <span>{formatDate(it.entry.data.date)}</span>
+                  </div>
+                  <h3>{it.entry.data.title}</h3>
+                  <p>{it.entry.data.description}</p>
+                </a>
+              ))}
+            </div>
+          </section>
         ))
       }
     </div>
+
     <div class="empty" id="empty-tip" style="display:none">没有符合条件的模板</div>
   </div>
 </Base>
 
+<style>
+  .taxonomy {
+    margin: 18px 0 22px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    font-size: 14px;
+  }
+  .taxonomy summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .taxonomy-grid {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 22px;
+  }
+  @media (max-width: 760px) {
+    .taxonomy-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .taxonomy-item strong {
+    color: var(--accent);
+    margin-right: 8px;
+  }
+  .taxonomy-item span {
+    color: var(--text-2);
+    font-size: 13.5px;
+  }
+  .taxonomy-tip {
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    color: var(--text-2);
+    font-size: 13px;
+  }
+  .tpl-group {
+    margin-bottom: 34px;
+  }
+  .group-count {
+    font-size: 13px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+</style>
+
 <script>
-  const chips = document.querySelectorAll('#cat-filters .chip');
-  const cards = document.querySelectorAll('#tpl-list .card');
+  const cards = Array.from(document.querySelectorAll('#tpl-list .card')) as HTMLElement[];
+  const groupEls = Array.from(document.querySelectorAll('#tpl-list .tpl-group')) as HTMLElement[];
+  const majorChips = Array.from(document.querySelectorAll('#major-filters .chip')) as HTMLElement[];
+  const minorWrap = document.getElementById('minor-filters') as HTMLElement | null;
   const search = document.getElementById('tpl-search') as HTMLInputElement | null;
   const empty = document.getElementById('empty-tip');
-  let curCat = 'all';
+
+  let curMajor = 'all';
+  let curMinor = 'all';
+
+  function minorsOf(major: string): string[] {
+    const set = new Set<string>();
+    cards.forEach((c) => {
+      if (c.dataset.major === major && c.dataset.minor) set.add(c.dataset.minor);
+    });
+    return Array.from(set);
+  }
+
+  function renderMinorChips() {
+    if (!minorWrap) return;
+    minorWrap.innerHTML = '';
+    if (curMajor === 'all') {
+      minorWrap.style.display = 'none';
+      return;
+    }
+    const minors = minorsOf(curMajor);
+    if (!minors.length) {
+      minorWrap.style.display = 'none';
+      return;
+    }
+    minorWrap.style.display = '';
+    const make = (label: string, val: string) => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (curMinor === val ? ' on' : '');
+      b.textContent = label;
+      b.addEventListener('click', () => {
+        curMinor = val;
+        renderMinorChips();
+        apply();
+      });
+      return b;
+    };
+    minorWrap.appendChild(make('全部小类', 'all'));
+    minors.forEach((m) =>
+      minorWrap.appendChild(
+        make(
+          `${m}（${cards.filter((c) => c.dataset.major === curMajor && c.dataset.minor === m).length}）`,
+          m,
+        ),
+      ),
+    );
+  }
 
   function apply() {
     const kw = (search?.value ?? '').trim().toLowerCase();
     let shown = 0;
     cards.forEach((card) => {
-      const cat = (card as HTMLElement).dataset.cat;
-      const key = ((card as HTMLElement).dataset.key ?? '').toLowerCase();
-      const hit = (curCat === 'all' || cat === curCat) && (!kw || key.includes(kw));
-      (card as HTMLElement).style.display = hit ? '' : 'none';
+      const okMajor = curMajor === 'all' || card.dataset.major === curMajor;
+      const okMinor = curMinor === 'all' || card.dataset.minor === curMinor;
+      const okKw = !kw || (card.dataset.key ?? '').toLowerCase().includes(kw);
+      const hit = okMajor && okMinor && okKw;
+      card.style.display = hit ? '' : 'none';
       if (hit) shown++;
+    });
+    groupEls.forEach((g) => {
+      const anyVisible = Array.from(g.querySelectorAll('.card')).some(
+        (c) => (c as HTMLElement).style.display !== 'none',
+      );
+      g.style.display = anyVisible ? '' : 'none';
     });
     if (empty) empty.style.display = shown ? 'none' : '';
   }
 
-  chips.forEach((chip) => {
+  majorChips.forEach((chip) => {
     chip.addEventListener('click', () => {
-      chips.forEach((c) => c.classList.remove('on'));
+      majorChips.forEach((c) => c.classList.remove('on'));
       chip.classList.add('on');
-      curCat = (chip as HTMLElement).dataset.cat ?? 'all';
+      curMajor = chip.dataset.major ?? 'all';
+      curMinor = 'all';
+      renderMinorChips();
       apply();
     });
   });

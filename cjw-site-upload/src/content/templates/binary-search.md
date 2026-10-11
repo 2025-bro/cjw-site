@@ -1,7 +1,7 @@
 ---
 title: 整数二分通用模板
 description: 两个万能二分写法：求最大值与求最小值，附防死循环要点
-category: 其他
+category: 二分与三分
 tags: [二分, 二分答案]
 author: WJC
 date: 2026-09-30

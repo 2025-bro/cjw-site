@@ -1,7 +1,7 @@
 ---
 title: Trie 字典树
 description: 字符串前缀树模板，支持插入与查询前缀出现次数
-category: 字符串
+category: 字典树
 tags: [Trie, 字符串, 前缀]
 author: CJW
 date: 2026-09-28

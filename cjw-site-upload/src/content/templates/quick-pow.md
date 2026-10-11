@@ -1,7 +1,7 @@
 ---
 title: 快速幂与乘法逆元
 description: 计算 a^b mod p（O(log b)），以及费马小定理求乘法逆元
-category: 数学
+category: 数论
 tags: [数论, 快速幂, 逆元]
 author: CJW
 date: 2026-09-20
