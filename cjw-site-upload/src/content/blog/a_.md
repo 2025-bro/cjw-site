@@ -1,5 +1,9 @@
-# 第8-11章 数据结构知识点整理
-
+---
+title: 数据结构8-11章知识点 
+description: 备考数据结构期末。
+date: 2026-10-11
+author: SJH
+tags: ["Queue","Stack","HashMap"]
 ---
 
 ## 第8章 栈（Stack）
