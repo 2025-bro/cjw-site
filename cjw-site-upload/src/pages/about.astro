@@ -1,5 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
+import avatarCjw from '../images/example_image1.png';
+import avatarDxy from '../images/example_image2.png';
+import avatarSjh from '../images/example_image_3.png';
 ---
 
 <Base title="关于我们" description="关于 cjw-wjc-qwq 代码小站与三位成员">
@@ -11,17 +14,17 @@ import Base from '../layouts/Base.astro';
 
     <div class="about-grid">
       <div class="about-card">
-        <div class="avatar">C</div>
+        <img class="avatar" src={avatarCjw} alt="CJW 头像" />
         <h3>CJW</h3>
         <p>田径队队长</p>
       </div>
       <div class="about-card">
-        <div class="avatar">D</div>
+        <img class="avatar" src={avatarDxy} alt="DXY 头像" />
         <h3>DXY</h3>
         <p>八条</p>
       </div>
       <div class="about-card">
-        <div class="avatar">S</div>
+        <img class="avatar" src={avatarSjh} alt="SJH 头像" />
         <h3>SJH</h3>
         <p>韩国人</p>
       </div>

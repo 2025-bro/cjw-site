@@ -802,8 +802,9 @@ html[data-theme='dark'] .login-card .error {
   margin: 0 auto 12px;
   border-radius: 50%;
   background: var(--accent-grad);
-  display: grid;
-  place-items: center;
+  display: block;
+  object-fit: cover;
+  object-position: center;
   color: #fff;
   font-weight: 800;
   font-family: var(--font-mono);
