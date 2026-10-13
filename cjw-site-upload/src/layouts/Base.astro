@@ -2,6 +2,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
+import '../styles/layout.css';
 
 interface Props {
   title?: string;
@@ -46,32 +47,44 @@ const pageDesc =
   </head>
   <body>
     <Header />
-    <main>
-      <slot />
-    </main>
-    <Footer />
+    <div class="app">
+      <main>
+        <slot />
+      </main>
+      <Footer />
+    </div>
     <script>
-      const toggle = document.getElementById('theme-toggle');
+      // 主题切换：侧边栏和顶栏的两个按钮都用 class 绑定
+      document.querySelectorAll('.theme-toggle').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const root = document.documentElement;
+          const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          root.setAttribute('data-theme', next);
+          try {
+            localStorage.setItem('theme', next);
+          } catch (e) {
+            /* ignore */
+          }
+        });
+      });
+
+      // 窄屏抽屉菜单
+      const sidebar = document.getElementById('sidebar');
       const menuBtn = document.getElementById('menu-btn');
-      const nav = document.getElementById('site-nav');
+      const closeNav = () => sidebar?.classList.remove('open');
 
-      toggle?.addEventListener('click', () => {
-        const root = document.documentElement;
-        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        root.setAttribute('data-theme', next);
-        try {
-          localStorage.setItem('theme', next);
-        } catch (e) {
-          /* ignore */
-        }
+      menuBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar?.classList.toggle('open');
       });
 
-      menuBtn?.addEventListener('click', () => {
-        nav?.classList.toggle('open');
+      sidebar?.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeNav));
+
+      document.addEventListener('click', (e) => {
+        if (!sidebar?.classList.contains('open')) return;
+        const target = e.target as HTMLElement;
+        if (!target.closest('.sidebar') && !target.closest('#menu-btn')) closeNav();
       });
-      nav?.querySelectorAll('a').forEach((a) =>
-        a.addEventListener('click', () => nav.classList.remove('open')),
-      );
     </script>
   </body>
 </html>
