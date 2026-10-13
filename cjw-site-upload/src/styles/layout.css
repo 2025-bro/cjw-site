@@ -180,17 +180,49 @@ body {
   color: var(--accent-2);
 }
 
-.side-actions {
+.side-foot {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 14px;
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
 }
-.side-actions .side-hint {
+.side-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.side-hint {
   font-size: 13px;
   color: var(--text-3);
+  white-space: nowrap;
+}
+
+/* 配色圆点 */
+.accent-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.accent-dot {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--dot);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 1px 3px rgba(20, 30, 60, 0.18);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.accent-dot:hover {
+  transform: scale(1.14);
+}
+.accent-dot.on {
+  border-color: var(--text);
+  transform: scale(1.14);
 }
 
 /* 主题按钮图标：浅色显示月亮，深色显示太阳 */
@@ -355,5 +387,138 @@ html[data-theme='dark'] .page-head h1 {
   }
   .site-footer .container {
     padding: 16px 18px;
+  }
+}
+
+/* ============================================================
+   9. 配色主题（html[data-accent]）
+   蓝紫 / 青蓝 / 青绿 / 橙红 / 品红 / 朱红 / 彩虹
+   深色模式自动换成更亮的同色系变体
+   ============================================================ */
+
+html[data-accent='blue'] {
+  --accent: #4f6df5;
+  --accent-2: #8a5cf6;
+  --accent-soft: rgba(79, 109, 245, 0.16);
+  --accent-grad: linear-gradient(120deg, #4f6df5, #8a5cf6);
+}
+html[data-accent='cyan'] {
+  --accent: #0e93b7;
+  --accent-2: #3b82f6;
+  --accent-soft: rgba(14, 147, 183, 0.16);
+  --accent-grad: linear-gradient(120deg, #0ea5b7, #3b82f6);
+}
+html[data-accent='green'] {
+  --accent: #0f9c4c;
+  --accent-2: #65a30d;
+  --accent-soft: rgba(15, 156, 76, 0.16);
+  --accent-grad: linear-gradient(120deg, #12a150, #84cc16);
+}
+html[data-accent='orange'] {
+  --accent: #e0761a;
+  --accent-2: #e11d48;
+  --accent-soft: rgba(224, 118, 26, 0.18);
+  --accent-grad: linear-gradient(120deg, #f59e0b, #f43f5e);
+}
+html[data-accent='pink'] {
+  --accent: #db2f92;
+  --accent-2: #8b5cf6;
+  --accent-soft: rgba(219, 47, 146, 0.16);
+  --accent-grad: linear-gradient(120deg, #e5399b, #8b5cf6);
+}
+html[data-accent='red'] {
+  --accent: #d81e48;
+  --accent-2: #ea580c;
+  --accent-soft: rgba(216, 30, 72, 0.16);
+  --accent-grad: linear-gradient(120deg, #e11d48, #f97316);
+}
+html[data-accent='rainbow'] {
+  --accent: #e0357f;
+  --accent-2: #3b82f6;
+  --accent-soft: rgba(224, 53, 127, 0.18);
+  --accent-grad: linear-gradient(
+    120deg,
+    #ff5f6d,
+    #ffc371,
+    #7ee8a2,
+    #4facfe,
+    #b06ab3,
+    #ff5f6d
+  );
+}
+
+html[data-theme='dark'][data-accent='blue'] {
+  --accent: #7b93ff;
+  --accent-2: #a98cff;
+  --accent-soft: rgba(123, 147, 255, 0.18);
+}
+html[data-theme='dark'][data-accent='cyan'] {
+  --accent: #3fc9e0;
+  --accent-2: #6aa6ff;
+  --accent-soft: rgba(63, 201, 224, 0.18);
+}
+html[data-theme='dark'][data-accent='green'] {
+  --accent: #4ade80;
+  --accent-2: #a3e635;
+  --accent-soft: rgba(74, 222, 128, 0.18);
+}
+html[data-theme='dark'][data-accent='orange'] {
+  --accent: #fbbf24;
+  --accent-2: #fb7185;
+  --accent-soft: rgba(251, 191, 36, 0.18);
+}
+html[data-theme='dark'][data-accent='pink'] {
+  --accent: #f472b6;
+  --accent-2: #c084fc;
+  --accent-soft: rgba(244, 114, 182, 0.18);
+}
+html[data-theme='dark'][data-accent='red'] {
+  --accent: #fb7185;
+  --accent-2: #fdba74;
+  --accent-soft: rgba(251, 113, 133, 0.18);
+}
+html[data-theme='dark'][data-accent='rainbow'] {
+  --accent: #f472b6;
+  --accent-2: #7dd3fc;
+  --accent-soft: rgba(244, 114, 182, 0.2);
+}
+
+/* 彩虹模式：Logo、首页大标题用流动渐变 */
+html[data-accent='rainbow'] .sidebar .brand .logo,
+html[data-accent='rainbow'] .mobile-bar .brand .logo,
+html[data-accent='rainbow'] .hero h1 .grad {
+  background: var(--accent-grad);
+  background-size: 280% 100%;
+  animation: rainbow-flow 9s linear infinite;
+}
+html[data-accent='rainbow'] .hero h1 .grad {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* 彩虹模式：侧栏当前页用彩虹底 */
+html[data-accent='rainbow'] .side-nav a.active {
+  background-image: var(--accent-grad);
+  background-size: 280% 100%;
+  color: #fff;
+  font-weight: 600;
+  animation: rainbow-flow 9s linear infinite;
+}
+
+@keyframes rainbow-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 280% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-accent='rainbow'] .sidebar .brand .logo,
+  html[data-accent='rainbow'] .mobile-bar .brand .logo,
+  html[data-accent='rainbow'] .hero h1 .grad,
+  html[data-accent='rainbow'] .side-nav a.active {
+    animation: none;
   }
 }

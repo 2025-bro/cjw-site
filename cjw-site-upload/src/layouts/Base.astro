@@ -39,8 +39,10 @@ const pageDesc =
             ? saved === 'dark'
             : window.matchMedia('(prefers-color-scheme: dark)').matches;
           document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-accent', localStorage.getItem('accent') || 'blue');
         } catch (e) {
           document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.setAttribute('data-accent', 'blue');
         }
       })();
     </script>
@@ -67,6 +69,26 @@ const pageDesc =
           }
         });
       });
+
+      // 配色切换：蓝紫 / 青蓝 / 青绿 / 橙红 / 品红 / 朱红 / 彩虹
+      const dots = Array.from(document.querySelectorAll('.accent-dot')) as HTMLElement[];
+      const markDots = () => {
+        const cur = document.documentElement.getAttribute('data-accent');
+        dots.forEach((d) => d.classList.toggle('on', d.dataset.accent === cur));
+      };
+      dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+          const key = dot.dataset.accent ?? 'blue';
+          document.documentElement.setAttribute('data-accent', key);
+          try {
+            localStorage.setItem('accent', key);
+          } catch (e) {
+            /* ignore */
+          }
+          markDots();
+        });
+      });
+      markDots();
 
       // 窄屏抽屉菜单
       const sidebar = document.getElementById('sidebar');

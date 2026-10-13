@@ -13,6 +13,17 @@ const navs = [
 
 const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 const isPrivate = path.startsWith('/private/');
+
+// 配色主题：与 layout.css 里的 html[data-accent='...'] 一一对应
+const accents = [
+  { key: 'blue', label: '蓝紫', dot: 'linear-gradient(135deg,#4f6df5,#8a5cf6)' },
+  { key: 'cyan', label: '青蓝', dot: 'linear-gradient(135deg,#0ea5b7,#3b82f6)' },
+  { key: 'green', label: '青绿', dot: 'linear-gradient(135deg,#12a150,#84cc16)' },
+  { key: 'orange', label: '橙红', dot: 'linear-gradient(135deg,#f59e0b,#f43f5e)' },
+  { key: 'pink', label: '品红', dot: 'linear-gradient(135deg,#e5399b,#8b5cf6)' },
+  { key: 'red', label: '朱红', dot: 'linear-gradient(135deg,#e11d48,#f97316)' },
+  { key: 'rainbow', label: '彩虹', dot: 'conic-gradient(from 0deg,#ff5f6d,#ffc371,#7ee8a2,#4facfe,#b06ab3,#ff5f6d)' },
+];
 ---
 
 <!-- 移动端顶栏：窄屏才显示 -->
@@ -63,15 +74,34 @@ const isPrivate = path.startsWith('/private/');
     </a>
   </nav>
 
-  <div class="side-actions">
-    <button class="icon-btn theme-toggle" title="切换深色 / 浅色模式" aria-label="切换主题">
-      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
-      </svg>
-      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
-      </svg>
-    </button>
-    <span class="side-hint">深色 / 浅色</span>
+  <div class="side-foot">
+    <div class="side-row">
+      <span class="side-hint">配色</span>
+      <div class="accent-picker" role="group" aria-label="配色主题">
+        {
+          accents.map((a) => (
+            <button
+              class="accent-dot"
+              data-accent={a.key}
+              title={a.label}
+              aria-label={a.label}
+              style={`--dot:${a.dot}`}
+            />
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="side-row">
+      <span class="side-hint">深色 / 浅色</span>
+      <button class="icon-btn theme-toggle" title="切换深色 / 浅色模式" aria-label="切换主题">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+        </svg>
+      </button>
+    </div>
   </div>
 </aside>
