@@ -14,7 +14,18 @@ const navs = [
 const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 const isPrivate = path.startsWith('/private/');
 
-// 配色主题：与 layout.css 里的 html[data-accent='...'] 一一对应
+// 背景主题：与 layout.css 里 html[data-theme='...'] 一一对应，决定整站底色
+const themes = [
+  { key: 'light', label: '浅色', dot: 'linear-gradient(135deg,#ffffff,#dde3ee)' },
+  { key: 'cream', label: '米黄', dot: 'linear-gradient(135deg,#fdf6e3,#e6d9bb)' },
+  { key: 'green', label: '护眼绿', dot: 'linear-gradient(135deg,#eef9f0,#cbe7d3)' },
+  { key: 'blue', label: '淡蓝', dot: 'linear-gradient(135deg,#eef5ff,#cbdcf6)' },
+  { key: 'violet', label: '淡紫', dot: 'linear-gradient(135deg,#f6f0ff,#d9c9f2)' },
+  { key: 'dark', label: '深色', dot: 'linear-gradient(135deg,#3b4457,#141a25)' },
+  { key: 'black', label: '纯黑', dot: 'linear-gradient(135deg,#2c2c31,#000000)' },
+];
+
+// 配色主题：决定强调色（链接、徽章、当前页高亮等）
 const accents = [
   { key: 'blue', label: '蓝紫', dot: 'linear-gradient(135deg,#4f6df5,#8a5cf6)' },
   { key: 'cyan', label: '青蓝', dot: 'linear-gradient(135deg,#0ea5b7,#3b82f6)' },
@@ -33,14 +44,6 @@ const accents = [
     <span>cjw-wjc-qwq 的福瑞王国</span>
   </a>
   <div class="bar-actions">
-    <button class="icon-btn theme-toggle" title="切换深色 / 浅色模式" aria-label="切换主题">
-      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
-      </svg>
-      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
-      </svg>
-    </button>
     <button class="icon-btn" id="menu-btn" title="菜单" aria-label="打开菜单">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <path d="M4 6h16M4 12h16M4 18h16"></path>
@@ -76,12 +79,29 @@ const accents = [
 
   <div class="side-foot">
     <div class="side-row">
+      <span class="side-hint">背景</span>
+      <div class="picker-dots" role="group" aria-label="背景主题">
+        {
+          themes.map((t) => (
+            <button
+              class="picker-dot theme-dot"
+              data-theme={t.key}
+              title={t.label}
+              aria-label={t.label}
+              style={`--dot:${t.dot}`}
+            />
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="side-row">
       <span class="side-hint">配色</span>
-      <div class="accent-picker" role="group" aria-label="配色主题">
+      <div class="picker-dots" role="group" aria-label="配色主题">
         {
           accents.map((a) => (
             <button
-              class="accent-dot"
+              class="picker-dot accent-dot"
               data-accent={a.key}
               title={a.label}
               aria-label={a.label}
@@ -90,18 +110,6 @@ const accents = [
           ))
         }
       </div>
-    </div>
-
-    <div class="side-row">
-      <span class="side-hint">深色 / 浅色</span>
-      <button class="icon-btn theme-toggle" title="切换深色 / 浅色模式" aria-label="切换主题">
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
-        </svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
-        </svg>
-      </button>
     </div>
   </div>
 </aside>

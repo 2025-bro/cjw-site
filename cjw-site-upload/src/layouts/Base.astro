@@ -31,18 +31,18 @@ const pageDesc =
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={siteName} />
     <script is:inline>
-      // 提前设置主题，避免闪烁
+      // 提前套用背景主题与配色，避免刷新闪烁
       (function () {
+        var html = document.documentElement;
         try {
-          var saved = localStorage.getItem('theme');
-          var dark = saved
-            ? saved === 'dark'
-            : window.matchMedia('(prefers-color-scheme: dark)').matches;
-          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-          document.documentElement.setAttribute('data-accent', localStorage.getItem('accent') || 'blue');
+          var saved = localStorage.getItem('bg') || localStorage.getItem('theme');
+          var theme =
+            saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          html.setAttribute('data-theme', theme);
+          html.setAttribute('data-accent', localStorage.getItem('accent') || 'blue');
         } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'light');
-          document.documentElement.setAttribute('data-accent', 'blue');
+          html.setAttribute('data-theme', 'light');
+          html.setAttribute('data-accent', 'blue');
         }
       })();
     </script>
@@ -56,27 +56,29 @@ const pageDesc =
       <Footer />
     </div>
     <script>
-      // 主题切换：侧边栏和顶栏的两个按钮都用 class 绑定
-      document.querySelectorAll('.theme-toggle').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const root = document.documentElement;
-          const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-          root.setAttribute('data-theme', next);
+      // 背景主题切换：浅色 / 米黄 / 护眼绿 / 淡蓝 / 淡紫 / 深色 / 纯黑
+      const themeDots = Array.from(document.querySelectorAll('.theme-dot')) as HTMLElement[];
+      const accentDots = Array.from(document.querySelectorAll('.accent-dot')) as HTMLElement[];
+
+      const markDots = (dots: HTMLElement[], attr: string) => {
+        const cur = document.documentElement.getAttribute(attr);
+        dots.forEach((d) => d.classList.toggle('on', d.dataset[attr === 'data-theme' ? 'theme' : 'accent'] === cur));
+      };
+
+      themeDots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+          const key = dot.dataset.theme ?? 'light';
+          document.documentElement.setAttribute('data-theme', key);
           try {
-            localStorage.setItem('theme', next);
+            localStorage.setItem('bg', key);
           } catch (e) {
             /* ignore */
           }
+          markDots(themeDots, 'data-theme');
         });
       });
 
-      // 配色切换：蓝紫 / 青蓝 / 青绿 / 橙红 / 品红 / 朱红 / 彩虹
-      const dots = Array.from(document.querySelectorAll('.accent-dot')) as HTMLElement[];
-      const markDots = () => {
-        const cur = document.documentElement.getAttribute('data-accent');
-        dots.forEach((d) => d.classList.toggle('on', d.dataset.accent === cur));
-      };
-      dots.forEach((dot) => {
+      accentDots.forEach((dot) => {
         dot.addEventListener('click', () => {
           const key = dot.dataset.accent ?? 'blue';
           document.documentElement.setAttribute('data-accent', key);
@@ -85,10 +87,12 @@ const pageDesc =
           } catch (e) {
             /* ignore */
           }
-          markDots();
+          markDots(accentDots, 'data-accent');
         });
       });
-      markDots();
+
+      markDots(themeDots, 'data-theme');
+      markDots(accentDots, 'data-accent');
 
       // 窄屏抽屉菜单
       const sidebar = document.getElementById('sidebar');
