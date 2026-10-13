@@ -7,22 +7,31 @@
    只在 global.css 之后加载，用于覆盖布局，不改动原样式表
    ============================================================ */
 
-/* ---------- 1. 背景照片（固定 + 可调遮罩 / 可关闭） ---------- */
+/* ---------- 1. 背景照片（合成层固定 + 可调遮罩 / 可关闭） ----------
+   用两层固定定位元素代替 background-attachment: fixed，
+   滚动时只做合成，不重绘整张大图，明显更流畅 */
 
 html {
-  background-image: linear-gradient(
-      rgb(var(--scrim-rgb, 250 252 255) / var(--scrim-a, 0.45)),
-      rgb(var(--scrim-rgb, 250 252 255) / var(--scrim-a, 0.45))
-    ),
-    url('/images/hero.jpg');
-  background-position: center, center;
-  background-size: cover, cover;
-  background-repeat: no-repeat, no-repeat;
-  background-attachment: fixed, fixed;
   background-color: var(--bg);
 }
 
-html[data-photo='off'] {
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+body::before {
+  z-index: -2;
+  background: url('/images/hero.jpg') center / cover no-repeat;
+}
+body::after {
+  z-index: -1;
+  background: rgb(var(--scrim-rgb, 250 252 255) / var(--scrim-a, 0.45));
+}
+
+html[data-photo='off'] body::before {
   background-image: none;
 }
 
@@ -61,6 +70,12 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
+/* 屏幕外的卡片不参与布局与绘制，长列表滚动更省力 */
+.card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 150px;
+}
+
 /* ---------- 3. 左侧导航栏（紧贴屏幕左边缘、整列到底） ---------- */
 
 .sidebar {
@@ -72,9 +87,7 @@ body {
   max-height: 100vh;
   overflow-y: auto;
   padding: 26px 20px 22px;
-  background: var(--glass-strong);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background: color-mix(in srgb, var(--glass-strong) 92%, var(--bg));
   border-right: 1px solid var(--border);
   border-radius: 0 18px 18px 0;
   box-shadow: 8px 0 32px rgba(20, 30, 60, 0.08);
@@ -191,9 +204,7 @@ body {
   max-width: 1040px;
   margin: 0 auto;
   padding: 42px 48px 38px;
-  background: var(--glass-strong);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  background: color-mix(in srgb, var(--glass-strong) 94%, var(--bg));
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--shadow-lg);
@@ -220,16 +231,13 @@ body {
   text-shadow: 0 2px 14px var(--glass-strong);
 }
 
-.taxonomy,
-.login-card,
-.site-footer {
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-}
+/* 注意：这里刻意不使用 backdrop-filter（毛玻璃）——
+   粘性侧栏 / 滚动内容上的模糊会让浏览器每帧重新计算，滚动明显卡顿。
+   改用「高不透明度玻璃 + 边框」，观感接近 GitHub，滚动丝滑。 */
 
 .site-footer {
   margin-top: 28px;
-  background: var(--glass);
+  background: var(--glass-strong);
   border: 1px solid var(--border);
   border-radius: 18px;
   box-shadow: var(--shadow);
@@ -305,9 +313,7 @@ html[data-width='wide'] .article {
     top: 0;
     z-index: 60;
     padding: 10px 14px;
-    background: var(--glass-strong);
-    backdrop-filter: blur(16px) saturate(150%);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    background: color-mix(in srgb, var(--glass-strong) 94%, var(--bg));
     border-bottom: 1px solid var(--border);
   }
   .mobile-bar .brand {
@@ -371,6 +377,18 @@ html[data-width='wide'] .article {
   }
   .site-footer .container {
     padding: 16px 18px;
+  }
+  /* 手机上关掉毛玻璃（移动 GPU 吃力），改用更实的底色保证可读 */
+  .sidebar,
+  .mobile-bar,
+  .article,
+  .taxonomy,
+  .login-card,
+  .site-footer,
+  .set-card,
+  .set-nav {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 
