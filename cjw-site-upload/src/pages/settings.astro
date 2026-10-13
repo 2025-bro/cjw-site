@@ -1,0 +1,591 @@
+---
+import Base from '../layouts/Base.astro';
+
+// 背景主题（与 layout.css 的 html[data-theme='...'] 对应）
+const themes = [
+  { key: 'snow', label: '雪白', dot: 'linear-gradient(135deg,#ffffff,#dde3ee)' },
+  { key: 'paper', label: '纸白', dot: 'linear-gradient(135deg,#fffdf8,#e9e4d6)' },
+  { key: 'cream', label: '米黄', dot: 'linear-gradient(135deg,#fdf6e3,#e6d9bb)' },
+  { key: 'sand', label: '沙棕', dot: 'linear-gradient(135deg,#f6efe4,#ddcdb6)' },
+  { key: 'rose', label: '藕粉', dot: 'linear-gradient(135deg,#fff2f5,#f2ccd8)' },
+  { key: 'violet', label: '淡紫', dot: 'linear-gradient(135deg,#f6f0ff,#d9c9f2)' },
+  { key: 'blue', label: '淡蓝', dot: 'linear-gradient(135deg,#eef5ff,#cbdcf6)' },
+  { key: 'sky', label: '天青', dot: 'linear-gradient(135deg,#eef9fc,#c7e6ef)' },
+  { key: 'mint', label: '薄荷', dot: 'linear-gradient(135deg,#eefaf5,#c8e8db)' },
+  { key: 'green', label: '护眼绿', dot: 'linear-gradient(135deg,#eef9f0,#cbe7d3)' },
+  { key: 'slate', label: '灰蓝', dot: 'linear-gradient(135deg,#f2f5f9,#d3dbe6)' },
+  { key: 'dark', label: '深色', dot: 'linear-gradient(135deg,#3b4457,#141a25)' },
+  { key: 'midnight', label: '午夜蓝', dot: 'linear-gradient(135deg,#24365c,#070d1a)' },
+  { key: 'ink', label: '墨绿', dot: 'linear-gradient(135deg,#1f4436,#06120d)' },
+  { key: 'night', label: '暗紫', dot: 'linear-gradient(135deg,#3d2c66,#100a1c)' },
+  { key: 'black', label: '纯黑', dot: 'linear-gradient(135deg,#2c2c31,#000000)' },
+];
+
+// 配色主题（与 layout.css 的 html[data-accent='...'] 对应）
+const accents = [
+  { key: 'blue', label: '蓝紫', a: '#4f6df5', b: '#8a5cf6' },
+  { key: 'indigo', label: '靛蓝', a: '#4f46e5', b: '#4338ca' },
+  { key: 'violet', label: '紫罗兰', a: '#7c3aed', b: '#a855f7' },
+  { key: 'purple', label: '紫', a: '#9333ea', b: '#c026d3' },
+  { key: 'pink', label: '品红', a: '#db2777', b: '#ec4899' },
+  { key: 'rose', label: '玫红', a: '#e11d48', b: '#fb7185' },
+  { key: 'red', label: '绯红', a: '#dc2626', b: '#f97316' },
+  { key: 'orange', label: '橙', a: '#ea580c', b: '#f59e0b' },
+  { key: 'amber', label: '琥珀', a: '#d97706', b: '#facc15' },
+  { key: 'lime', label: '青柠', a: '#65a30d', b: '#16a34a' },
+  { key: 'green', label: '绿', a: '#16a34a', b: '#84cc16' },
+  { key: 'emerald', label: '翡翠', a: '#059669', b: '#10b981' },
+  { key: 'teal', label: '青碧', a: '#0d9488', b: '#14b8a6' },
+  { key: 'cyan', label: '青', a: '#0891b2', b: '#06b6d4' },
+  { key: 'sky', label: '天蓝', a: '#0284c7', b: '#38bdf8' },
+  { key: 'slate', label: '石板灰', a: '#475569', b: '#64748b' },
+  { key: 'rainbow', label: '彩虹', a: '#ff5f6d', b: '#4facfe' },
+];
+
+const fonts = [
+  { key: 'sm', label: '小' },
+  { key: 'md', label: '标准' },
+  { key: 'lg', label: '大' },
+  { key: 'xl', label: '特大' },
+];
+
+const widths = [
+  { key: 'narrow', label: '窄' },
+  { key: 'normal', label: '标准' },
+  { key: 'wide', label: '宽' },
+];
+---
+
+<Base title="设置" description="站点外观、背景与阅读偏好设置">
+  <div class="container">
+    <header class="page-head">
+      <h1>⚙️ 设置</h1>
+      <p>外观、背景、配色、阅读偏好都在这里调整，改完立即生效，并保存在本机浏览器里。</p>
+    </header>
+
+    <div class="settings">
+      <nav class="set-nav">
+        <a href="#appearance" class="on">🎨 外观</a>
+        <a href="#background">🖼️ 背景</a>
+        <a href="#reading">📖 阅读</a>
+        <a href="#reset">♻️ 重置</a>
+      </nav>
+
+      <div class="set-body">
+        <section class="set-card" id="appearance">
+          <h2>外观</h2>
+
+          <div class="set-row col">
+            <div class="set-label">
+              <strong>背景主题</strong>
+              <span>整站底色，照片遮罩会跟着染色，共 {themes.length} 套</span>
+            </div>
+            <div class="swatch-grid" id="theme-grid">
+              {
+                themes.map((t) => (
+                  <button class="swatch" data-theme={t.key} title={t.label}>
+                    <span class="swatch-dot" style={`--dot:${t.dot}`} />
+                    <span class="swatch-name">{t.label}</span>
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+
+          <div class="set-row col">
+            <div class="set-label">
+              <strong>配色</strong>
+              <span>链接、徽章、当前页高亮的颜色，共 {accents.length} 种</span>
+            </div>
+            <div class="swatch-grid" id="accent-grid">
+              {
+                accents.map((a) => (
+                  <button class="swatch" data-accent={a.key} title={a.label}>
+                    <span
+                      class="swatch-dot"
+                      style={`--dot:${a.key === 'rainbow' ? 'conic-gradient(from 0deg,#ff5f6d,#ffc371,#7ee8a2,#4facfe,#b06ab3,#ff5f6d)' : `linear-gradient(135deg,${a.a},${a.b})`}`}
+                    />
+                    <span class="swatch-name">{a.label}</span>
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+
+          <div class="set-row">
+            <div class="set-label">
+              <strong>跟随系统</strong>
+              <span>按系统的深色 / 浅色自动选用背景主题</span>
+            </div>
+            <button class="set-btn" id="auto-theme">跟随系统</button>
+          </div>
+        </section>
+
+        <section class="set-card" id="background">
+          <h2>背景</h2>
+
+          <div class="set-row">
+            <div class="set-label">
+              <strong>显示背景照片</strong>
+              <span>关闭后只显示主题底色，加载更快</span>
+            </div>
+            <button class="switch on" id="photo-toggle" role="switch" aria-checked="true">
+              <span></span>
+            </button>
+          </div>
+
+          <div class="set-row">
+            <div class="set-label">
+              <strong>照片遮罩浓度</strong>
+              <span>数值越大照片越淡、文字越清晰</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="scrim-range" min="0" max="0.8" step="0.05" value="0.45" />
+              <span class="slider-val" id="scrim-val">45%</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="set-card" id="reading">
+          <h2>阅读</h2>
+
+          <div class="set-row">
+            <div class="set-label">
+              <strong>正文字号</strong>
+              <span>影响正文、卡片和导航的文字大小</span>
+            </div>
+            <div class="seg" id="font-seg">
+              {fonts.map((f) => <button data-font={f.key}>{f.label}</button>)}
+            </div>
+          </div>
+
+          <div class="set-row">
+            <div class="set-label">
+              <strong>内容宽度</strong>
+              <span>宽屏下内容区占多宽</span>
+            </div>
+            <div class="seg" id="width-seg">
+              {widths.map((w) => <button data-width={w.key}>{w.label}</button>)}
+            </div>
+          </div>
+        </section>
+
+        <section class="set-card" id="reset">
+          <h2>重置</h2>
+          <div class="set-row">
+            <div class="set-label">
+              <strong>恢复默认设置</strong>
+              <span>把背景主题、配色、字号、宽度等全部还原</span>
+            </div>
+            <button class="set-btn danger" id="reset-btn">恢复默认</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .settings {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+    margin-top: 22px;
+  }
+
+  .set-nav {
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 14px;
+    background: var(--glass-strong);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+  }
+  .set-nav a {
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: var(--text-2);
+    font-size: 14.5px;
+  }
+  .set-nav a:hover {
+    background: var(--surface-2);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .set-nav a.on {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .set-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .set-card {
+    padding: 22px 26px 8px;
+    background: var(--glass-strong);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+  }
+  .set-card h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+
+  .set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px 0;
+    border-top: 1px solid var(--border);
+  }
+  .set-row.col {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .set-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .set-label strong {
+    font-size: 15px;
+    color: var(--text);
+  }
+  .set-label span {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  /* 颜色色块 */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 10px;
+  }
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 8px;
+    border-radius: 13px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 12.5px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+  }
+  .swatch:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
+  .swatch.on {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .swatch-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--dot);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(20, 30, 60, 0.16);
+  }
+
+  /* 开关 */
+  .switch {
+    width: 52px;
+    height: 29px;
+    flex: 0 0 auto;
+    padding: 3px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    cursor: pointer;
+    transition: background 0.16s ease;
+  }
+  .switch span {
+    display: block;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(20, 30, 60, 0.3);
+    transition: transform 0.16s ease;
+  }
+  .switch.on {
+    background: var(--accent);
+  }
+  .switch.on span {
+    transform: translateX(23px);
+  }
+
+  /* 滑块 */
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 auto;
+  }
+  .slider-wrap input[type='range'] {
+    width: 190px;
+    accent-color: var(--accent);
+  }
+  .slider-val {
+    width: 46px;
+    text-align: right;
+    font-size: 13px;
+    color: var(--text-2);
+    font-family: var(--font-mono);
+  }
+
+  /* 分段按钮 */
+  .seg {
+    display: flex;
+    gap: 6px;
+    padding: 4px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+  .seg button {
+    padding: 7px 16px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .seg button.on {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* 普通按钮 */
+  .set-btn {
+    padding: 9px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .set-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .set-btn.danger:hover {
+    border-color: #e11d48;
+    color: #e11d48;
+  }
+
+  @media (max-width: 900px) {
+    .settings {
+      grid-template-columns: 1fr;
+    }
+    .set-nav {
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .set-card {
+      padding: 18px 16px 4px;
+    }
+    .set-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .swatch-grid {
+      grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+      width: 100%;
+    }
+    .slider-wrap input[type='range'] {
+      width: 150px;
+    }
+  }
+</style>
+
+<script>
+  const DARK = ['dark', 'black', 'midnight', 'ink', 'night'];
+  const DEFAULTS = { theme: 'snow', accent: 'blue', font: 'md', width: 'normal', photo: 'on', scrim: 0.45 };
+  const html = document.documentElement;
+
+  interface Prefs {
+    theme: string;
+    accent: string;
+    font: string;
+    width: string;
+    photo: string;
+    scrim: number;
+  }
+
+  function systemTheme(): string {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'snow';
+  }
+
+  function load(): Prefs {
+    const p: Partial<Prefs> = {};
+    try {
+      Object.assign(p, JSON.parse(localStorage.getItem('prefs') || '{}') || {});
+      if (!p.theme) p.theme = localStorage.getItem('bg') || localStorage.getItem('theme') || systemTheme();
+      if (!p.accent) p.accent = localStorage.getItem('accent') || 'blue';
+    } catch (e) {
+      /* ignore */
+    }
+    return { ...DEFAULTS, ...p } as Prefs;
+  }
+
+  function save(p: Prefs) {
+    try {
+      localStorage.setItem('prefs', JSON.stringify(p));
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  function apply(p: Prefs) {
+    html.setAttribute('data-theme', p.theme);
+    html.setAttribute('data-accent', p.accent);
+    html.setAttribute('data-font', p.font);
+    html.setAttribute('data-width', p.width);
+    html.setAttribute('data-photo', p.photo);
+    html.setAttribute('data-dark', DARK.indexOf(p.theme) >= 0 ? '1' : '0');
+    html.style.setProperty('--scrim-a', String(p.scrim));
+  }
+
+  const prefs = load();
+  apply(prefs);
+
+  // 选中态高亮
+  function mark() {
+    document.querySelectorAll<HTMLElement>('.swatch[data-theme]').forEach((el) => {
+      el.classList.toggle('on', el.dataset.theme === prefs.theme);
+    });
+    document.querySelectorAll<HTMLElement>('.swatch[data-accent]').forEach((el) => {
+      el.classList.toggle('on', el.dataset.accent === prefs.accent);
+    });
+    document.querySelectorAll<HTMLElement>('#font-seg button').forEach((el) => {
+      el.classList.toggle('on', el.dataset.font === prefs.font);
+    });
+    document.querySelectorAll<HTMLElement>('#width-seg button').forEach((el) => {
+      el.classList.toggle('on', el.dataset.width === prefs.width);
+    });
+    const sw = document.getElementById('photo-toggle');
+    sw?.classList.toggle('on', prefs.photo === 'on');
+    sw?.setAttribute('aria-checked', prefs.photo === 'on' ? 'true' : 'false');
+    const range = document.getElementById('scrim-range') as HTMLInputElement | null;
+    if (range) range.value = String(prefs.scrim);
+    const val = document.getElementById('scrim-val');
+    if (val) val.textContent = Math.round(prefs.scrim * 100) + '%';
+  }
+
+  // 背景主题
+  document.querySelectorAll<HTMLElement>('.swatch[data-theme]').forEach((el) => {
+    el.addEventListener('click', () => {
+      prefs.theme = el.dataset.theme ?? 'snow';
+      apply(prefs);
+      save(prefs);
+      mark();
+    });
+  });
+
+  // 配色
+  document.querySelectorAll<HTMLElement>('.swatch[data-accent]').forEach((el) => {
+    el.addEventListener('click', () => {
+      prefs.accent = el.dataset.accent ?? 'blue';
+      apply(prefs);
+      save(prefs);
+      mark();
+    });
+  });
+
+  // 跟随系统
+  document.getElementById('auto-theme')?.addEventListener('click', () => {
+    prefs.theme = systemTheme();
+    apply(prefs);
+    save(prefs);
+    mark();
+  });
+
+  // 背景照片开关
+  document.getElementById('photo-toggle')?.addEventListener('click', () => {
+    prefs.photo = prefs.photo === 'on' ? 'off' : 'on';
+    apply(prefs);
+    save(prefs);
+    mark();
+  });
+
+  // 遮罩浓度
+  document.getElementById('scrim-range')?.addEventListener('input', (e) => {
+    const v = Number((e.target as HTMLInputElement).value);
+    prefs.scrim = v;
+    apply(prefs);
+    save(prefs);
+    mark();
+  });
+
+  // 字号
+  document.querySelectorAll<HTMLElement>('#font-seg button').forEach((el) => {
+    el.addEventListener('click', () => {
+      prefs.font = el.dataset.font ?? 'md';
+      apply(prefs);
+      save(prefs);
+      mark();
+    });
+  });
+
+  // 内容宽度
+  document.querySelectorAll<HTMLElement>('#width-seg button').forEach((el) => {
+    el.addEventListener('click', () => {
+      prefs.width = el.dataset.width ?? 'normal';
+      apply(prefs);
+      save(prefs);
+      mark();
+    });
+  });
+
+  // 恢复默认
+  document.getElementById('reset-btn')?.addEventListener('click', () => {
+    Object.assign(prefs, DEFAULTS, { theme: systemTheme() });
+    apply(prefs);
+    save(prefs);
+    mark();
+  });
+
+  // 左侧分类高亮（点击滚动时同步）
+  const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.set-nav a'));
+  navLinks.forEach((a) => {
+    a.addEventListener('click', () => {
+      navLinks.forEach((x) => x.classList.toggle('on', x === a));
+    });
+  });
+
+  mark();
+</script>

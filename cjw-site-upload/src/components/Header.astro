@@ -9,32 +9,11 @@ const navs = [
   { href: '/search/', label: '搜索', icon: '🔍' },
   { href: '/guide/', label: '发布指南', icon: '📖' },
   { href: '/about/', label: '关于', icon: '👤' },
+  { href: '/settings/', label: '设置', icon: '⚙️' },
 ];
 
 const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 const isPrivate = path.startsWith('/private/');
-
-// 背景主题：与 layout.css 里 html[data-theme='...'] 一一对应，决定整站底色
-const themes = [
-  { key: 'light', label: '浅色', dot: 'linear-gradient(135deg,#ffffff,#dde3ee)' },
-  { key: 'cream', label: '米黄', dot: 'linear-gradient(135deg,#fdf6e3,#e6d9bb)' },
-  { key: 'green', label: '护眼绿', dot: 'linear-gradient(135deg,#eef9f0,#cbe7d3)' },
-  { key: 'blue', label: '淡蓝', dot: 'linear-gradient(135deg,#eef5ff,#cbdcf6)' },
-  { key: 'violet', label: '淡紫', dot: 'linear-gradient(135deg,#f6f0ff,#d9c9f2)' },
-  { key: 'dark', label: '深色', dot: 'linear-gradient(135deg,#3b4457,#141a25)' },
-  { key: 'black', label: '纯黑', dot: 'linear-gradient(135deg,#2c2c31,#000000)' },
-];
-
-// 配色主题：决定强调色（链接、徽章、当前页高亮等）
-const accents = [
-  { key: 'blue', label: '蓝紫', dot: 'linear-gradient(135deg,#4f6df5,#8a5cf6)' },
-  { key: 'cyan', label: '青蓝', dot: 'linear-gradient(135deg,#0ea5b7,#3b82f6)' },
-  { key: 'green', label: '青绿', dot: 'linear-gradient(135deg,#12a150,#84cc16)' },
-  { key: 'orange', label: '橙红', dot: 'linear-gradient(135deg,#f59e0b,#f43f5e)' },
-  { key: 'pink', label: '品红', dot: 'linear-gradient(135deg,#e5399b,#8b5cf6)' },
-  { key: 'red', label: '朱红', dot: 'linear-gradient(135deg,#e11d48,#f97316)' },
-  { key: 'rainbow', label: '彩虹', dot: 'conic-gradient(from 0deg,#ff5f6d,#ffc371,#7ee8a2,#4facfe,#b06ab3,#ff5f6d)' },
-];
 ---
 
 <!-- 移动端顶栏：窄屏才显示 -->
@@ -78,38 +57,7 @@ const accents = [
   </nav>
 
   <div class="side-foot">
-    <div class="side-row">
-      <span class="side-hint">背景</span>
-      <div class="picker-dots" role="group" aria-label="背景主题">
-        {
-          themes.map((t) => (
-            <button
-              class="picker-dot theme-dot"
-              data-theme={t.key}
-              title={t.label}
-              aria-label={t.label}
-              style={`--dot:${t.dot}`}
-            />
-          ))
-        }
-      </div>
-    </div>
-
-    <div class="side-row">
-      <span class="side-hint">配色</span>
-      <div class="picker-dots" role="group" aria-label="配色主题">
-        {
-          accents.map((a) => (
-            <button
-              class="picker-dot accent-dot"
-              data-accent={a.key}
-              title={a.label}
-              aria-label={a.label}
-              style={`--dot:${a.dot}`}
-            />
-          ))
-        }
-      </div>
-    </div>
+    外观、背景、配色、字号等都在
+    <a href="/settings/">⚙️ 设置</a> 里调整。
   </div>
 </aside>

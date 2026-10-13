@@ -1,19 +1,29 @@
 /* ============================================================
    layout.css —— 侧边栏（贴左整列）+ 照片背景 + 玻璃拟态
-   · 配色主题（data-accent）：只改强调色
-   · 背景主题（data-theme）：改整站底色 / 玻璃 / 文字色
+   · 背景主题（data-theme）16 套：改整站底色 / 玻璃 / 文字 / 照片染色
+   · 配色主题（data-accent）17 种：改强调色（由 --accent-base 自动派生）
+   · 阅读设置：data-font（字号）、data-width（内容宽度）
+   · 背景设置：data-photo（是否显示照片）、--scrim-a（遮罩浓度）
    只在 global.css 之后加载，用于覆盖布局，不改动原样式表
    ============================================================ */
 
-/* ---------- 1. 背景照片（固定不滚动 + 随主题变色的遮罩） ---------- */
+/* ---------- 1. 背景照片（固定 + 可调遮罩 / 可关闭） ---------- */
 
 html {
-  background-image: linear-gradient(var(--scrim), var(--scrim)), url('/images/hero.jpg');
+  background-image: linear-gradient(
+      rgb(var(--scrim-rgb, 250 252 255) / var(--scrim-a, 0.45)),
+      rgb(var(--scrim-rgb, 250 252 255) / var(--scrim-a, 0.45))
+    ),
+    url('/images/hero.jpg');
   background-position: center, center;
   background-size: cover, cover;
   background-repeat: no-repeat, no-repeat;
   background-attachment: fixed, fixed;
   background-color: var(--bg);
+}
+
+html[data-photo='off'] {
+  background-image: none;
 }
 
 /* ---------- 2. 整屏骨架：侧栏贴左，内容占满剩余宽度 ---------- */
@@ -28,6 +38,7 @@ body {
   padding: 0;
   min-height: 100vh;
   overflow-x: clip;
+  font-size: calc(16px * var(--fs, 1));
 }
 
 .app {
@@ -129,7 +140,7 @@ body {
   padding: 11px 14px;
   border-radius: 11px;
   color: var(--text-2);
-  font-size: 15px;
+  font-size: calc(15px * var(--fs, 1));
   transition: background 0.15s ease, color 0.15s ease;
 }
 .side-nav a:hover {
@@ -156,63 +167,25 @@ body {
   color: var(--accent-2);
 }
 
-/* ---------- 4. 底部两组圆形选项（配色 / 背景主题） ---------- */
-
 .side-foot {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
-}
-.side-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.side-hint {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-3);
-  white-space: nowrap;
+  line-height: 1.6;
+}
+.side-foot a {
+  color: var(--text-2);
 }
 
-.picker-dots {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-.picker-dot {
-  width: 21px;
-  height: 21px;
-  padding: 0;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  background: var(--dot);
-  cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4), 0 1px 3px rgba(20, 30, 60, 0.18);
-  transition: transform 0.15s ease, border-color 0.15s ease;
-}
-.picker-dot:hover {
-  transform: scale(1.14);
-}
-.picker-dot.on {
-  border-color: var(--text);
-  transform: scale(1.14);
-}
-
-/* ---------- 5. 移动端顶栏（桌面隐藏） ---------- */
+/* ---------- 4. 移动端顶栏（桌面隐藏） ---------- */
 
 .mobile-bar {
   display: none;
 }
 
-/* ---------- 6. 文章：页面主体就是"正在读的这篇文章" ---------- */
+/* ---------- 5. 文章：页面主体就是"正在读的这篇文章" ---------- */
 
 .article {
   max-width: 1040px;
@@ -226,7 +199,7 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
-/* ---------- 7. 首页 / 列表页标题在照片上的可读性 ---------- */
+/* ---------- 6. 标题与玻璃面板 ---------- */
 
 .hero {
   position: relative;
@@ -247,7 +220,6 @@ body {
   text-shadow: 0 2px 14px var(--glass-strong);
 }
 
-/* 玻璃面板统一加模糊（只对大块面板，避免卡片过多影响性能） */
 .taxonomy,
 .login-card,
 .site-footer {
@@ -264,6 +236,56 @@ body {
 }
 .site-footer .container {
   padding: 20px 24px;
+}
+
+/* ---------- 7. 阅读设置：字号 / 内容宽度 ---------- */
+
+html[data-font='sm'] {
+  --fs: 0.92;
+}
+html[data-font='md'] {
+  --fs: 1;
+}
+html[data-font='lg'] {
+  --fs: 1.1;
+}
+html[data-font='xl'] {
+  --fs: 1.22;
+}
+
+.prose {
+  font-size: calc(15.8px * var(--fs, 1));
+}
+.prose pre code {
+  font-size: calc(13.8px * var(--fs, 1));
+}
+.card h3 {
+  font-size: calc(16.5px * var(--fs, 1));
+}
+.card p {
+  font-size: calc(14px * var(--fs, 1));
+}
+.hero p {
+  font-size: calc(16.5px * var(--fs, 1));
+}
+
+html[data-width='narrow'] .container {
+  max-width: 1120px;
+}
+html[data-width='normal'] .container {
+  max-width: 1440px;
+}
+html[data-width='wide'] .container {
+  max-width: 1820px;
+}
+html[data-width='narrow'] .article {
+  max-width: 900px;
+}
+html[data-width='normal'] .article {
+  max-width: 1040px;
+}
+html[data-width='wide'] .article {
+  max-width: 1220px;
 }
 
 /* ---------- 8. 响应式：窄屏把侧栏收成抽屉 ---------- */
@@ -347,223 +369,197 @@ body {
   .site-footer {
     margin-top: 18px;
   }
-  .site-footer .footer-inner,
   .site-footer .container {
     padding: 16px 18px;
   }
 }
 
 /* ============================================================
-   9. 背景主题（html[data-theme]）
-   浅色 / 米黄 / 护眼绿 / 淡蓝 / 淡紫 / 深色 / 纯黑
-   每套主题同时决定：页面底色、照片遮罩、玻璃面板、文字色
+   9. 背景主题 16 套（html[data-theme]）
    ============================================================ */
 
-html[data-theme='light'] {
+html[data-theme='snow'] {
   color-scheme: light;
-  --bg: #f6f7fb;
-  --text: #222a38;
-  --text-2: #5b6577;
-  --text-3: #8a93a6;
-  --surface: rgba(255, 255, 255, 0.62);
-  --surface-2: rgba(255, 255, 255, 0.45);
-  --border: rgba(255, 255, 255, 0.65);
-  --glass: rgba(255, 255, 255, 0.55);
-  --glass-strong: rgba(255, 255, 255, 0.78);
-  --scrim: rgba(250, 252, 255, 0.4);
-  --code-bg: rgba(241, 243, 249, 0.72);
+  --bg: #f6f7fb; --text: #222a38; --text-2: #5b6577; --text-3: #8a93a6;
+  --surface: rgba(255, 255, 255, 0.62); --surface-2: rgba(255, 255, 255, 0.45); --border: rgba(255, 255, 255, 0.65);
+  --glass: rgba(255, 255, 255, 0.55); --glass-strong: rgba(255, 255, 255, 0.78);
+  --scrim-rgb: 250 252 255; --code-bg: rgba(241, 243, 249, 0.72);
   --shadow: 0 8px 30px rgba(20, 30, 60, 0.1), 0 1px 2px rgba(20, 30, 60, 0.05);
   --shadow-lg: 0 20px 56px rgba(20, 30, 60, 0.18);
 }
-
+html[data-theme='paper'] {
+  color-scheme: light;
+  --bg: #fbfaf6; --text: #2b2a26; --text-2: #5f5c53; --text-3: #8d8a80;
+  --surface: rgba(255, 255, 253, 0.66); --surface-2: rgba(250, 248, 240, 0.5); --border: rgba(255, 255, 255, 0.62);
+  --glass: rgba(252, 251, 246, 0.58); --glass-strong: rgba(253, 252, 248, 0.82);
+  --scrim-rgb: 251 250 246; --code-bg: rgba(246, 244, 236, 0.76);
+  --shadow: 0 8px 30px rgba(60, 55, 40, 0.1), 0 1px 2px rgba(60, 55, 40, 0.05);
+  --shadow-lg: 0 20px 56px rgba(60, 55, 40, 0.18);
+}
 html[data-theme='cream'] {
   color-scheme: light;
-  --bg: #f7f1e3;
-  --text: #3a3226;
-  --text-2: #6c6252;
-  --text-3: #978c78;
-  --surface: rgba(255, 251, 240, 0.66);
-  --surface-2: rgba(252, 244, 228, 0.5);
-  --border: rgba(255, 255, 255, 0.6);
-  --glass: rgba(252, 246, 233, 0.58);
-  --glass-strong: rgba(253, 248, 238, 0.82);
-  --scrim: rgba(247, 241, 227, 0.5);
-  --code-bg: rgba(246, 238, 222, 0.78);
+  --bg: #f7f1e3; --text: #3a3226; --text-2: #6c6252; --text-3: #978c78;
+  --surface: rgba(255, 251, 240, 0.66); --surface-2: rgba(252, 244, 228, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(252, 246, 233, 0.58); --glass-strong: rgba(253, 248, 238, 0.82);
+  --scrim-rgb: 247 241 227; --code-bg: rgba(246, 238, 222, 0.78);
   --shadow: 0 8px 30px rgba(90, 70, 30, 0.12), 0 1px 2px rgba(90, 70, 30, 0.06);
   --shadow-lg: 0 20px 56px rgba(90, 70, 30, 0.2);
 }
-
-html[data-theme='green'] {
+html[data-theme='sand'] {
   color-scheme: light;
-  --bg: #eaf5ec;
-  --text: #22332a;
-  --text-2: #4f6a58;
-  --text-3: #7e9686;
-  --surface: rgba(240, 250, 242, 0.66);
-  --surface-2: rgba(226, 244, 231, 0.5);
-  --border: rgba(255, 255, 255, 0.6);
-  --glass: rgba(238, 249, 241, 0.58);
-  --glass-strong: rgba(242, 251, 244, 0.82);
-  --scrim: rgba(230, 246, 234, 0.5);
-  --code-bg: rgba(228, 244, 232, 0.78);
-  --shadow: 0 8px 30px rgba(30, 90, 50, 0.12), 0 1px 2px rgba(30, 90, 50, 0.06);
-  --shadow-lg: 0 20px 56px rgba(30, 90, 50, 0.2);
+  --bg: #f3ece2; --text: #3a3128; --text-2: #6d6155; --text-3: #9a8d7d;
+  --surface: rgba(252, 246, 238, 0.66); --surface-2: rgba(243, 236, 226, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(249, 242, 232, 0.58); --glass-strong: rgba(251, 245, 236, 0.82);
+  --scrim-rgb: 243 236 226; --code-bg: rgba(240, 231, 218, 0.78);
+  --shadow: 0 8px 30px rgba(85, 65, 40, 0.12), 0 1px 2px rgba(85, 65, 40, 0.06);
+  --shadow-lg: 0 20px 56px rgba(85, 65, 40, 0.2);
 }
-
-html[data-theme='blue'] {
+html[data-theme='rose'] {
   color-scheme: light;
-  --bg: #eaf1fb;
-  --text: #1e2a3d;
-  --text-2: #4a5a75;
-  --text-3: #7b8aa3;
-  --surface: rgba(238, 245, 255, 0.66);
-  --surface-2: rgba(224, 236, 252, 0.5);
-  --border: rgba(255, 255, 255, 0.6);
-  --glass: rgba(236, 244, 255, 0.58);
-  --glass-strong: rgba(240, 247, 255, 0.82);
-  --scrim: rgba(228, 240, 255, 0.5);
-  --code-bg: rgba(226, 238, 253, 0.78);
-  --shadow: 0 8px 30px rgba(30, 60, 120, 0.12), 0 1px 2px rgba(30, 60, 120, 0.06);
-  --shadow-lg: 0 20px 56px rgba(30, 60, 120, 0.2);
+  --bg: #fbeef1; --text: #3d2730; --text-2: #74545f; --text-3: #a1848e;
+  --surface: rgba(255, 244, 247, 0.66); --surface-2: rgba(250, 232, 238, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(253, 240, 244, 0.58); --glass-strong: rgba(255, 246, 249, 0.82);
+  --scrim-rgb: 250 235 240; --code-bg: rgba(250, 235, 240, 0.78);
+  --shadow: 0 8px 30px rgba(140, 60, 85, 0.12), 0 1px 2px rgba(140, 60, 85, 0.06);
+  --shadow-lg: 0 20px 56px rgba(140, 60, 85, 0.2);
 }
-
 html[data-theme='violet'] {
   color-scheme: light;
-  --bg: #f2ecfa;
-  --text: #2b2340;
-  --text-2: #584c73;
-  --text-3: #8a7ea6;
-  --surface: rgba(246, 240, 255, 0.66);
-  --surface-2: rgba(236, 226, 252, 0.5);
-  --border: rgba(255, 255, 255, 0.6);
-  --glass: rgba(245, 239, 255, 0.58);
-  --glass-strong: rgba(248, 243, 255, 0.82);
-  --scrim: rgba(240, 232, 255, 0.5);
-  --code-bg: rgba(238, 230, 253, 0.78);
+  --bg: #f2ecfa; --text: #2b2340; --text-2: #584c73; --text-3: #8a7ea6;
+  --surface: rgba(246, 240, 255, 0.66); --surface-2: rgba(236, 226, 252, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(245, 239, 255, 0.58); --glass-strong: rgba(248, 243, 255, 0.82);
+  --scrim-rgb: 240 232 255; --code-bg: rgba(238, 230, 253, 0.78);
   --shadow: 0 8px 30px rgba(80, 50, 140, 0.12), 0 1px 2px rgba(80, 50, 140, 0.06);
   --shadow-lg: 0 20px 56px rgba(80, 50, 140, 0.2);
 }
-
+html[data-theme='blue'] {
+  color-scheme: light;
+  --bg: #eaf1fb; --text: #1e2a3d; --text-2: #4a5a75; --text-3: #7b8aa3;
+  --surface: rgba(238, 245, 255, 0.66); --surface-2: rgba(224, 236, 252, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(236, 244, 255, 0.58); --glass-strong: rgba(240, 247, 255, 0.82);
+  --scrim-rgb: 228 240 255; --code-bg: rgba(226, 238, 253, 0.78);
+  --shadow: 0 8px 30px rgba(30, 60, 120, 0.12), 0 1px 2px rgba(30, 60, 120, 0.06);
+  --shadow-lg: 0 20px 56px rgba(30, 60, 120, 0.2);
+}
+html[data-theme='sky'] {
+  color-scheme: light;
+  --bg: #eaf6fa; --text: #1f3440; --text-2: #4a6675; --text-3: #7b95a3;
+  --surface: rgba(238, 248, 252, 0.66); --surface-2: rgba(224, 242, 248, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(236, 247, 251, 0.58); --glass-strong: rgba(240, 249, 252, 0.82);
+  --scrim-rgb: 228 244 250; --code-bg: rgba(226, 242, 248, 0.78);
+  --shadow: 0 8px 30px rgba(20, 90, 115, 0.12), 0 1px 2px rgba(20, 90, 115, 0.06);
+  --shadow-lg: 0 20px 56px rgba(20, 90, 115, 0.2);
+}
+html[data-theme='mint'] {
+  color-scheme: light;
+  --bg: #eaf7f2; --text: #1f3730; --text-2: #4a6a60; --text-3: #7b9a90;
+  --surface: rgba(238, 250, 245, 0.66); --surface-2: rgba(224, 244, 236, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(236, 249, 244, 0.58); --glass-strong: rgba(240, 251, 247, 0.82);
+  --scrim-rgb: 228 246 238; --code-bg: rgba(226, 244, 236, 0.78);
+  --shadow: 0 8px 30px rgba(20, 100, 80, 0.12), 0 1px 2px rgba(20, 100, 80, 0.06);
+  --shadow-lg: 0 20px 56px rgba(20, 100, 80, 0.2);
+}
+html[data-theme='green'] {
+  color-scheme: light;
+  --bg: #eaf5ec; --text: #22332a; --text-2: #4f6a58; --text-3: #7e9686;
+  --surface: rgba(240, 250, 242, 0.66); --surface-2: rgba(226, 244, 231, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(238, 249, 241, 0.58); --glass-strong: rgba(242, 251, 244, 0.82);
+  --scrim-rgb: 230 246 234; --code-bg: rgba(228, 244, 232, 0.78);
+  --shadow: 0 8px 30px rgba(30, 90, 50, 0.12), 0 1px 2px rgba(30, 90, 50, 0.06);
+  --shadow-lg: 0 20px 56px rgba(30, 90, 50, 0.2);
+}
+html[data-theme='slate'] {
+  color-scheme: light;
+  --bg: #eef1f5; --text: #242a34; --text-2: #55606f; --text-3: #8590a0;
+  --surface: rgba(245, 248, 252, 0.66); --surface-2: rgba(232, 238, 245, 0.5); --border: rgba(255, 255, 255, 0.6);
+  --glass: rgba(243, 246, 251, 0.58); --glass-strong: rgba(247, 250, 253, 0.82);
+  --scrim-rgb: 236 241 247; --code-bg: rgba(232, 237, 244, 0.78);
+  --shadow: 0 8px 30px rgba(40, 50, 70, 0.12), 0 1px 2px rgba(40, 50, 70, 0.06);
+  --shadow-lg: 0 20px 56px rgba(40, 50, 70, 0.2);
+}
 html[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0e1219;
-  --text: #e8edf6;
-  --text-2: #98a3b8;
-  --text-3: #6b7689;
-  --surface: rgba(18, 23, 34, 0.6);
-  --surface-2: rgba(34, 42, 58, 0.5);
-  --border: rgba(255, 255, 255, 0.14);
-  --glass: rgba(16, 21, 31, 0.55);
-  --glass-strong: rgba(16, 21, 31, 0.8);
-  --scrim: rgba(6, 9, 15, 0.55);
-  --code-bg: rgba(12, 16, 24, 0.85);
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.6);
+  --bg: #0e1219; --text: #e8edf6; --text-2: #98a3b8; --text-3: #6b7689;
+  --surface: rgba(18, 23, 34, 0.6); --surface-2: rgba(34, 42, 58, 0.5); --border: rgba(255, 255, 255, 0.14);
+  --glass: rgba(16, 21, 31, 0.55); --glass-strong: rgba(16, 21, 31, 0.8);
+  --scrim-rgb: 6 9 15; --code-bg: rgba(12, 16, 24, 0.85);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.45); --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.6);
 }
-
+html[data-theme='midnight'] {
+  color-scheme: dark;
+  --bg: #0b1220; --text: #e6ecf7; --text-2: #93a1ba; --text-3: #66748c;
+  --surface: rgba(16, 24, 40, 0.6); --surface-2: rgba(30, 42, 64, 0.5); --border: rgba(255, 255, 255, 0.14);
+  --glass: rgba(14, 22, 38, 0.55); --glass-strong: rgba(14, 22, 38, 0.82);
+  --scrim-rgb: 4 8 18; --code-bg: rgba(10, 16, 28, 0.88);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.5); --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.65);
+}
+html[data-theme='ink'] {
+  color-scheme: dark;
+  --bg: #0b1a14; --text: #e4f1ea; --text-2: #93b3a4; --text-3: #67816f;
+  --surface: rgba(14, 32, 24, 0.6); --surface-2: rgba(28, 50, 40, 0.5); --border: rgba(255, 255, 255, 0.13);
+  --glass: rgba(12, 28, 21, 0.55); --glass-strong: rgba(12, 28, 21, 0.82);
+  --scrim-rgb: 3 12 8; --code-bg: rgba(9, 22, 16, 0.88);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.5); --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.65);
+}
+html[data-theme='night'] {
+  color-scheme: dark;
+  --bg: #140f22; --text: #ebe6f7; --text-2: #a99cc4; --text-3: #7d719b;
+  --surface: rgba(24, 18, 44, 0.6); --surface-2: rgba(40, 30, 66, 0.5); --border: rgba(255, 255, 255, 0.13);
+  --glass: rgba(22, 16, 40, 0.55); --glass-strong: rgba(22, 16, 40, 0.82);
+  --scrim-rgb: 10 6 20; --code-bg: rgba(18, 12, 32, 0.88);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.55); --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.7);
+}
 html[data-theme='black'] {
   color-scheme: dark;
-  --bg: #000000;
-  --text: #eaeaee;
-  --text-2: #9b9ba6;
-  --text-3: #6d6d78;
-  --surface: rgba(12, 12, 15, 0.66);
-  --surface-2: rgba(26, 26, 31, 0.6);
-  --border: rgba(255, 255, 255, 0.12);
-  --glass: rgba(8, 8, 10, 0.6);
-  --glass-strong: rgba(8, 8, 10, 0.86);
-  --scrim: rgba(0, 0, 0, 0.74);
-  --code-bg: rgba(14, 14, 17, 0.92);
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.85);
+  --bg: #000000; --text: #eaeaee; --text-2: #9b9ba6; --text-3: #6d6d78;
+  --surface: rgba(12, 12, 15, 0.66); --surface-2: rgba(26, 26, 31, 0.6); --border: rgba(255, 255, 255, 0.12);
+  --glass: rgba(8, 8, 10, 0.6); --glass-strong: rgba(8, 8, 10, 0.86);
+  --scrim-rgb: 0 0 0; --code-bg: rgba(14, 14, 17, 0.92);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.7); --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.85);
 }
 
 /* ============================================================
-   10. 配色主题（html[data-accent]）：蓝紫 / 青蓝 / 青绿 / 橙红 / 品红 / 朱红 / 彩虹
+   10. 配色主题 17 种（html[data-accent]）
+   只声明基色，--accent / --accent-2 / --accent-soft 自动派生；
+   深色系背景（data-dark=1）自动整体提亮，保证对比度
    ============================================================ */
 
-html[data-accent='blue'] {
-  --accent: #4f6df5;
-  --accent-2: #8a5cf6;
-  --accent-soft: rgba(79, 109, 245, 0.16);
-  --accent-grad: linear-gradient(120deg, #4f6df5, #8a5cf6);
+:root {
+  --accent: var(--accent-base, #4f6df5);
+  --accent-2: var(--accent-2-base, #8a5cf6);
+  --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --accent-grad: linear-gradient(120deg, var(--accent), var(--accent-2));
 }
-html[data-accent='cyan'] {
-  --accent: #0e93b7;
-  --accent-2: #3b82f6;
-  --accent-soft: rgba(14, 147, 183, 0.16);
-  --accent-grad: linear-gradient(120deg, #0ea5b7, #3b82f6);
+
+html[data-dark='1'] {
+  --accent: color-mix(in srgb, var(--accent-base, #4f6df5) 72%, #ffffff);
+  --accent-2: color-mix(in srgb, var(--accent-2-base, #8a5cf6) 72%, #ffffff);
+  --accent-soft: color-mix(in srgb, var(--accent) 20%, transparent);
 }
-html[data-accent='green'] {
-  --accent: #0f9c4c;
-  --accent-2: #65a30d;
-  --accent-soft: rgba(15, 156, 76, 0.16);
-  --accent-grad: linear-gradient(120deg, #12a150, #84cc16);
-}
-html[data-accent='orange'] {
-  --accent: #e0761a;
-  --accent-2: #e11d48;
-  --accent-soft: rgba(224, 118, 26, 0.18);
-  --accent-grad: linear-gradient(120deg, #f59e0b, #f43f5e);
-}
-html[data-accent='pink'] {
-  --accent: #db2f92;
-  --accent-2: #8b5cf6;
-  --accent-soft: rgba(219, 47, 146, 0.16);
-  --accent-grad: linear-gradient(120deg, #e5399b, #8b5cf6);
-}
-html[data-accent='red'] {
-  --accent: #d81e48;
-  --accent-2: #ea580c;
-  --accent-soft: rgba(216, 30, 72, 0.16);
-  --accent-grad: linear-gradient(120deg, #e11d48, #f97316);
-}
+
+html[data-accent='blue'] { --accent-base: #4f6df5; --accent-2-base: #8a5cf6; }
+html[data-accent='indigo'] { --accent-base: #4f46e5; --accent-2-base: #4338ca; }
+html[data-accent='violet'] { --accent-base: #7c3aed; --accent-2-base: #a855f7; }
+html[data-accent='purple'] { --accent-base: #9333ea; --accent-2-base: #c026d3; }
+html[data-accent='pink'] { --accent-base: #db2777; --accent-2-base: #ec4899; }
+html[data-accent='rose'] { --accent-base: #e11d48; --accent-2-base: #fb7185; }
+html[data-accent='red'] { --accent-base: #dc2626; --accent-2-base: #f97316; }
+html[data-accent='orange'] { --accent-base: #ea580c; --accent-2-base: #f59e0b; }
+html[data-accent='amber'] { --accent-base: #d97706; --accent-2-base: #facc15; }
+html[data-accent='lime'] { --accent-base: #65a30d; --accent-2-base: #16a34a; }
+html[data-accent='green'] { --accent-base: #16a34a; --accent-2-base: #84cc16; }
+html[data-accent='emerald'] { --accent-base: #059669; --accent-2-base: #10b981; }
+html[data-accent='teal'] { --accent-base: #0d9488; --accent-2-base: #14b8a6; }
+html[data-accent='cyan'] { --accent-base: #0891b2; --accent-2-base: #06b6d4; }
+html[data-accent='sky'] { --accent-base: #0284c7; --accent-2-base: #38bdf8; }
+html[data-accent='slate'] { --accent-base: #475569; --accent-2-base: #64748b; }
 html[data-accent='rainbow'] {
-  --accent: #e0357f;
-  --accent-2: #3b82f6;
-  --accent-soft: rgba(224, 53, 127, 0.18);
+  --accent-base: #e0357f;
+  --accent-2-base: #3b82f6;
   --accent-grad: linear-gradient(120deg, #ff5f6d, #ffc371, #7ee8a2, #4facfe, #b06ab3, #ff5f6d);
 }
 
-/* 深色系背景（深色 / 纯黑）里用更亮的强调色 */
-html:is([data-theme='dark'], [data-theme='black'])[data-accent='blue'] {
-  --accent: #7b93ff;
-  --accent-2: #a98cff;
-  --accent-soft: rgba(123, 147, 255, 0.18);
-}
-html:is([data-theme='dark'], [data-theme='black'])[data-accent='cyan'] {
-  --accent: #3fc9e0;
-  --accent-2: #6aa6ff;
-  --accent-soft: rgba(63, 201, 224, 0.18);
-}
-html:is([data-theme='dark'], [data-theme='black'])[data-accent='green'] {
-  --accent: #4ade80;
-  --accent-2: #a3e635;
-  --accent-soft: rgba(74, 222, 128, 0.18);
-}
-html:is([data-theme='dark'], [data-theme='black'])[data-accent='orange'] {
-  --accent: #fbbf24;
-  --accent-2: #fb7185;
-  --accent-soft: rgba(251, 191, 36, 0.18);
-}
-html:is([data-theme='dark'], [data-theme='black'])[data-accent='pink'] {
-  --accent: #f472b6;
-  --accent-2: #c084fc;
-  --accent-soft: rgba(244, 114, 182, 0.18);
-}
-html:is([data-theme='dark'], [data-theme='black'])[data-accent='red'] {
-  --accent: #fb7185;
-  --accent-2: #fdba74;
-  --accent-soft: rgba(251, 113, 133, 0.18);
-}
-html:is([data-theme='dark'], [data-theme='black'])[data-accent='rainbow'] {
-  --accent: #f472b6;
-  --accent-2: #7dd3fc;
-  --accent-soft: rgba(244, 114, 182, 0.2);
-}
-
-/* ---------- 彩虹：Logo、首页大标题、当前页高亮用流动渐变 ---------- */
-
+/* 彩虹：Logo、首页大标题、当前页高亮用流动渐变 */
 html[data-accent='rainbow'] .sidebar .brand .logo,
 html[data-accent='rainbow'] .mobile-bar .brand .logo,
 html[data-accent='rainbow'] .hero h1 .grad {

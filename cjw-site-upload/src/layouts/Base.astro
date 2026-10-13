@@ -31,19 +31,34 @@ const pageDesc =
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={siteName} />
     <script is:inline>
-      // 提前套用背景主题与配色，避免刷新闪烁
+      // 提前套用「设置」页保存的偏好，避免刷新闪烁
       (function () {
         var html = document.documentElement;
+        var DARK = ['dark', 'black', 'midnight', 'ink', 'night'];
+        var p = {};
         try {
-          var saved = localStorage.getItem('bg') || localStorage.getItem('theme');
-          var theme =
-            saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          html.setAttribute('data-theme', theme);
-          html.setAttribute('data-accent', localStorage.getItem('accent') || 'blue');
+          p = JSON.parse(localStorage.getItem('prefs') || '{}') || {};
+          if (!p.theme) {
+            p.theme =
+              localStorage.getItem('bg') ||
+              localStorage.getItem('theme') ||
+              (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'snow');
+          }
+          if (!p.accent) p.accent = localStorage.getItem('accent') || 'blue';
+          if (!p.font) p.font = 'md';
+          if (!p.width) p.width = 'normal';
+          if (!p.photo) p.photo = 'on';
+          if (typeof p.scrim !== 'number') p.scrim = 0.45;
         } catch (e) {
-          html.setAttribute('data-theme', 'light');
-          html.setAttribute('data-accent', 'blue');
+          p = { theme: 'snow', accent: 'blue', font: 'md', width: 'normal', photo: 'on', scrim: 0.45 };
         }
+        html.setAttribute('data-theme', p.theme);
+        html.setAttribute('data-accent', p.accent);
+        html.setAttribute('data-font', p.font);
+        html.setAttribute('data-width', p.width);
+        html.setAttribute('data-photo', p.photo);
+        html.setAttribute('data-dark', DARK.indexOf(p.theme) >= 0 ? '1' : '0');
+        html.style.setProperty('--scrim-a', String(p.scrim));
       })();
     </script>
   </head>
@@ -56,44 +71,6 @@ const pageDesc =
       <Footer />
     </div>
     <script>
-      // 背景主题切换：浅色 / 米黄 / 护眼绿 / 淡蓝 / 淡紫 / 深色 / 纯黑
-      const themeDots = Array.from(document.querySelectorAll('.theme-dot')) as HTMLElement[];
-      const accentDots = Array.from(document.querySelectorAll('.accent-dot')) as HTMLElement[];
-
-      const markDots = (dots: HTMLElement[], attr: string) => {
-        const cur = document.documentElement.getAttribute(attr);
-        dots.forEach((d) => d.classList.toggle('on', d.dataset[attr === 'data-theme' ? 'theme' : 'accent'] === cur));
-      };
-
-      themeDots.forEach((dot) => {
-        dot.addEventListener('click', () => {
-          const key = dot.dataset.theme ?? 'light';
-          document.documentElement.setAttribute('data-theme', key);
-          try {
-            localStorage.setItem('bg', key);
-          } catch (e) {
-            /* ignore */
-          }
-          markDots(themeDots, 'data-theme');
-        });
-      });
-
-      accentDots.forEach((dot) => {
-        dot.addEventListener('click', () => {
-          const key = dot.dataset.accent ?? 'blue';
-          document.documentElement.setAttribute('data-accent', key);
-          try {
-            localStorage.setItem('accent', key);
-          } catch (e) {
-            /* ignore */
-          }
-          markDots(accentDots, 'data-accent');
-        });
-      });
-
-      markDots(themeDots, 'data-theme');
-      markDots(accentDots, 'data-accent');
-
       // 窄屏抽屉菜单
       const sidebar = document.getElementById('sidebar');
       const menuBtn = document.getElementById('menu-btn');
