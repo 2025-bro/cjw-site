@@ -127,6 +127,17 @@ const widths = [
 
           <div class="set-row">
             <div class="set-label">
+              <strong>侧边栏</strong>
+              <span>收起后不再遮挡壁纸，左上角会出现一个展开按钮</span>
+            </div>
+            <div class="seg" id="sidebar-seg">
+              <button data-sidebar="open">展开</button>
+              <button data-sidebar="closed">收起</button>
+            </div>
+          </div>
+
+          <div class="set-row">
+            <div class="set-label">
               <strong>背景类型</strong>
               <span>壁纸来自合集文件，可随时切换；纯色最省流量</span>
             </div>
@@ -486,6 +497,7 @@ const widths = [
     bg: 'wallpaper',
     wallpaper: 'sunset',
     wq: 'hd',
+    sidebar: 'open',
     scrim: 0.45,
   };
   const html = document.documentElement;
@@ -498,6 +510,7 @@ const widths = [
     bg: string;
     wallpaper: string;
     wq: string;
+    sidebar: string;
     scrim: number;
   }
 
@@ -515,6 +528,7 @@ const widths = [
       if (!p.bg) p.bg = (p as { photo?: string }).photo === 'off' ? 'solid' : 'wallpaper';
       if (!p.wallpaper) p.wallpaper = 'sunset';
       if (!p.wq) p.wq = 'hd';
+      if (!p.sidebar) p.sidebar = 'open';
     } catch (e) {
       /* ignore */
     }
@@ -537,6 +551,7 @@ const widths = [
     html.setAttribute('data-bg', p.bg);
     html.setAttribute('data-wallpaper', p.wallpaper);
     html.setAttribute('data-wq', p.wq);
+    html.setAttribute('data-sidebar', p.sidebar);
     html.setAttribute('data-dark', DARK.indexOf(p.theme) >= 0 ? '1' : '0');
     html.style.setProperty('--scrim-a', String(p.scrim));
   }
@@ -566,6 +581,9 @@ const widths = [
     });
     document.querySelectorAll<HTMLElement>('#wq-seg button').forEach((el) => {
       el.classList.toggle('on', el.dataset.wq === prefs.wq);
+    });
+    document.querySelectorAll<HTMLElement>('#sidebar-seg button').forEach((el) => {
+      el.classList.toggle('on', el.dataset.sidebar === prefs.sidebar);
     });
     const range = document.getElementById('scrim-range') as HTMLInputElement | null;
     if (range) range.value = String(prefs.scrim);
@@ -629,6 +647,26 @@ const widths = [
       save(prefs);
       mark();
     });
+  });
+
+  // 侧边栏 展开 / 收起
+  document.querySelectorAll<HTMLElement>('#sidebar-seg button').forEach((el) => {
+    el.addEventListener('click', () => {
+      prefs.sidebar = el.dataset.sidebar ?? 'open';
+      apply(prefs);
+      save(prefs);
+      mark();
+    });
+  });
+
+  // 顶部/侧栏的收起按钮也走同一份设置，切回来时同步高亮
+  document.addEventListener('prefs-change', () => {
+    try {
+      Object.assign(prefs, JSON.parse(localStorage.getItem('prefs') || '{}') || {});
+    } catch (e) {
+      /* ignore */
+    }
+    mark();
   });
 
   // 遮罩浓度

@@ -64,9 +64,7 @@ html[data-photo='off'] body::before {
 
 body {
   background: transparent;
-  display: flex;
-  align-items: stretch;
-  gap: 0;
+  display: block;
   max-width: none;
   margin: 0;
   padding: 0;
@@ -75,10 +73,12 @@ body {
   font-size: calc(16px * var(--fs, 1));
 }
 
+/* 内容区：给固定侧栏留出左边距；收起时归零（带过渡动画） */
 .app {
-  flex: 1 1 auto;
   min-width: 0;
+  margin-left: var(--side-w, 268px);
   padding: 28px 40px 48px;
+  transition: margin-left 0.28s ease;
 }
 
 .container {
@@ -104,18 +104,20 @@ body {
 /* ---------- 3. 左侧导航栏（紧贴屏幕左边缘、整列到底） ---------- */
 
 .sidebar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  flex: 0 0 var(--side-w, 268px);
+  left: 0;
+  bottom: 0;
+  z-index: 55;
   width: var(--side-w, 268px);
   height: 100vh;
-  max-height: 100vh;
   overflow-y: auto;
   padding: 26px 20px 22px;
   background: color-mix(in srgb, var(--glass-strong) 92%, var(--bg));
   border-right: 1px solid var(--border);
   border-radius: 0 18px 18px 0;
   box-shadow: 8px 0 32px rgba(20, 30, 60, 0.08);
+  transition: transform 0.28s ease;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -130,7 +132,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 2px 8px 18px;
+  padding: 2px 46px 18px 8px;
   margin-bottom: 12px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
@@ -215,6 +217,60 @@ body {
 }
 .side-foot a {
   color: var(--text-2);
+}
+
+/* ---------- 3.5 侧边栏收起 / 展开 ---------- */
+
+.sidebar-toggle {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.sidebar-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.sidebar-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+.sidebar-toggle.in-side {
+  position: absolute;
+  top: 26px;
+  right: 18px;
+}
+
+/* 收起后：在页面左上角显示一个浮动按钮 */
+.float-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  z-index: 58;
+  width: 38px;
+  height: 38px;
+  background: color-mix(in srgb, var(--glass-strong) 92%, var(--bg));
+  box-shadow: var(--shadow);
+}
+
+@media (min-width: 901px) {
+  html[data-sidebar='closed'] .sidebar {
+    transform: translateX(-100%);
+  }
+  html[data-sidebar='closed'] .app {
+    margin-left: 0;
+  }
+  html[data-sidebar='closed'] .float-toggle {
+    display: grid;
+  }
 }
 
 /* ---------- 4. 移动端顶栏（桌面隐藏） ---------- */
@@ -384,7 +440,11 @@ html[data-width='wide'] .article {
     transform: none;
   }
   .app {
+    margin-left: 0;
     padding: 0 14px 30px;
+  }
+  .sidebar-toggle.in-side {
+    display: none;
   }
   .container {
     max-width: 100%;

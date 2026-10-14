@@ -50,6 +50,7 @@ const pageDesc =
           if (!p.bg) p.bg = p.photo === 'off' ? 'solid' : 'wallpaper';
           if (!p.wallpaper) p.wallpaper = 'sunset';
           if (!p.wq) p.wq = 'hd';
+          if (!p.sidebar) p.sidebar = 'open';
           if (typeof p.scrim !== 'number') p.scrim = 0.45;
         } catch (e) {
           p = {
@@ -60,6 +61,7 @@ const pageDesc =
             bg: 'wallpaper',
             wallpaper: 'sunset',
             wq: 'hd',
+            sidebar: 'open',
             scrim: 0.45,
           };
         }
@@ -70,6 +72,7 @@ const pageDesc =
         html.setAttribute('data-bg', p.bg);
         html.setAttribute('data-wallpaper', p.wallpaper);
         html.setAttribute('data-wq', p.wq);
+        html.setAttribute('data-sidebar', p.sidebar);
         html.setAttribute('data-dark', DARK.indexOf(p.theme) >= 0 ? '1' : '0');
         html.style.setProperty('--scrim-a', String(p.scrim));
       })();
@@ -84,6 +87,22 @@ const pageDesc =
       <Footer />
     </div>
     <script>
+      // 侧边栏收起 / 展开（状态记住，下次打开保持）
+      const toggleSidebar = () => {
+        const root = document.documentElement;
+        const next = root.getAttribute('data-sidebar') === 'closed' ? 'open' : 'closed';
+        root.setAttribute('data-sidebar', next);
+        try {
+          const p = JSON.parse(localStorage.getItem('prefs') || '{}') || {};
+          p.sidebar = next;
+          localStorage.setItem('prefs', JSON.stringify(p));
+        } catch (e) {
+          /* ignore */
+        }
+        document.dispatchEvent(new CustomEvent('prefs-change'));
+      };
+      document.querySelectorAll('.sidebar-toggle').forEach((b) => b.addEventListener('click', toggleSidebar));
+
       // 窄屏抽屉菜单
       const sidebar = document.getElementById('sidebar');
       const menuBtn = document.getElementById('menu-btn');
