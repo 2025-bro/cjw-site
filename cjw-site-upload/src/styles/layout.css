@@ -3,13 +3,12 @@
    · 背景主题（data-theme）16 套：改整站底色 / 玻璃 / 文字 / 壁纸染色
    · 配色主题（data-accent）17 种：改强调色（由 --accent-base 自动派生）
    · 阅读设置：data-font（字号）、data-width（内容宽度）
-   · 背景设置：data-bg（壁纸 / 纯色）、data-wallpaper（合集里的第几张）、--scrim-a
+   · 背景设置：data-bg（壁纸 / 纯色）、--scrim-a（遮罩浓度）
    只在 global.css 之后加载，用于覆盖布局，不改动原样式表
    ============================================================ */
 
-/* ---------- 1. 背景壁纸：单文件合集（雪碧图）+ 遮罩 ----------
-   4 张壁纸拼在 public/images/wallpapers.jpg 一张图里（2×2 格），
-   切换壁纸只改 background-position（--wp-pos），不额外下载任何文件；
+/* ---------- 1. 背景壁纸 + 遮罩 ----------
+   壁纸文件：public/images/wallpaper.jpg（单张，cover 铺满，不变形）
    用固定定位层代替 background-attachment: fixed，滚动只做合成不重绘。 */
 
 html {
@@ -25,33 +24,14 @@ body::after {
 }
 body::before {
   z-index: -2;
-  background-image: url('/images/wallpapers.jpg');
+  background-image: url('/images/wallpaper.jpg');
   background-repeat: no-repeat;
-  background-size: var(--wp-size, 200% 200%);
-  background-position: var(--wp-pos, 0% 0%);
-}
-
-/* 画质档位：高清档换用 1080p 合集（设置里可切换） */
-html[data-wq='hd'] body::before {
-  background-image: url('/images/wallpapers-hd.jpg');
+  background-size: cover;
+  background-position: center;
 }
 body::after {
   z-index: -1;
   background: rgb(var(--scrim-rgb, 250 252 255) / var(--scrim-a, 0.45));
-}
-
-/* 壁纸格子坐标（2 × 2 合集，与 src/data/wallpapers.ts 对应） */
-html[data-wallpaper='sunset'] {
-  --wp-pos: 0% 0%;
-}
-html[data-wallpaper='valley'] {
-  --wp-pos: 100% 0%;
-}
-html[data-wallpaper='snow'] {
-  --wp-pos: 0% 100%;
-}
-html[data-wallpaper='dusk'] {
-  --wp-pos: 100% 100%;
 }
 
 /* 纯色背景（不显示壁纸）；data-photo 是早期版本的旧设置，兼容保留 */

@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { WALLPAPERS, COLS, ROWS } from '../data/wallpapers';
+import { WALLPAPER } from '../data/wallpapers';
 
 // 背景主题（与 layout.css 的 html[data-theme='...'] 对应）
 const themes = [
@@ -139,7 +139,7 @@ const widths = [
           <div class="set-row">
             <div class="set-label">
               <strong>背景类型</strong>
-              <span>壁纸来自合集文件，可随时切换；纯色最省流量</span>
+              <span>壁纸为《山水清音》；纯色最省流量</span>
             </div>
             <div class="seg" id="bg-seg">
               <button data-bg="wallpaper">壁纸</button>
@@ -149,36 +149,13 @@ const widths = [
 
           <div class="set-row col">
             <div class="set-label">
-              <strong>壁纸</strong>
+              <strong>当前壁纸</strong>
               <span>
-                合集文件 public/images/wallpapers.jpg 里预存了 {WALLPAPERS.length} 张（{COLS}×{ROWS} 拼接），
-                换壁纸只改坐标、不额外下载任何文件
+                public/images/wallpaper.jpg（1672×941，约 500KB，cover 铺满不变形）。
+                想换图直接替换这个文件即可，文件名保持不变。
               </span>
             </div>
-            <div class="swatch-grid" id="wp-grid">
-              {
-                WALLPAPERS.map((w) => (
-                  <button class="swatch" data-wallpaper={w.key} title={w.label}>
-                    <span
-                      class="wp-thumb"
-                      style={`--pos:${(w.col / (COLS - 1)) * 100}% ${(w.row / (ROWS - 1)) * 100}%;--size:${COLS * 100}% ${ROWS * 100}%`}
-                    />
-                    <span class="swatch-name">{w.label}</span>
-                  </button>
-                ))
-              }
-            </div>
-          </div>
-
-          <div class="set-row">
-            <div class="set-label">
-              <strong>壁纸画质</strong>
-              <span>高清档每格 1920×1080（约 1MB）；轻量档每格 1280×720（约 440KB），慢网络更省流量</span>
-            </div>
-            <div class="seg" id="wq-seg">
-              <button data-wq="hd">高清</button>
-              <button data-wq="lite">轻量</button>
-            </div>
+            <div class="wallpaper-preview" style={`background-image:url('${WALLPAPER}')`} />
           </div>
 
           <div class="set-row">
@@ -356,7 +333,18 @@ const widths = [
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(20, 30, 60, 0.16);
   }
 
-  /* 壁纸缩略图：直接用合集文件的对应格子，不额外加载图片 */
+  /* 当前壁纸预览 */
+  .wallpaper-preview {
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 2px 8px rgba(20, 30, 60, 0.18);
+  }
+
+  /* 壁纸缩略图（合集模式遗留样式，保留兼容） */
   .wp-thumb {
     width: 78px;
     height: 44px;
