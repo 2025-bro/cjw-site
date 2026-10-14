@@ -26,7 +26,7 @@ const pageDesc =
     <meta name="description" content={pageDesc} />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preload" as="image" href="/images/hero.jpg" />
+    <link rel="preload" as="image" href="/images/wallpapers.jpg" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDesc} />
     <meta property="og:type" content="website" />
@@ -48,16 +48,26 @@ const pageDesc =
           if (!p.accent) p.accent = localStorage.getItem('accent') || 'blue';
           if (!p.font) p.font = 'md';
           if (!p.width) p.width = 'normal';
-          if (!p.photo) p.photo = 'on';
+          if (!p.bg) p.bg = p.photo === 'off' ? 'solid' : 'wallpaper';
+          if (!p.wallpaper) p.wallpaper = 'sunset';
           if (typeof p.scrim !== 'number') p.scrim = 0.45;
         } catch (e) {
-          p = { theme: 'snow', accent: 'blue', font: 'md', width: 'normal', photo: 'on', scrim: 0.45 };
+          p = {
+            theme: 'snow',
+            accent: 'blue',
+            font: 'md',
+            width: 'normal',
+            bg: 'wallpaper',
+            wallpaper: 'sunset',
+            scrim: 0.45,
+          };
         }
         html.setAttribute('data-theme', p.theme);
         html.setAttribute('data-accent', p.accent);
         html.setAttribute('data-font', p.font);
         html.setAttribute('data-width', p.width);
-        html.setAttribute('data-photo', p.photo);
+        html.setAttribute('data-bg', p.bg);
+        html.setAttribute('data-wallpaper', p.wallpaper);
         html.setAttribute('data-dark', DARK.indexOf(p.theme) >= 0 ? '1' : '0');
         html.style.setProperty('--scrim-a', String(p.scrim));
       })();
