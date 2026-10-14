@@ -161,6 +161,17 @@ const widths = [
 
           <div class="set-row">
             <div class="set-label">
+              <strong>壁纸画质</strong>
+              <span>高清档每格 1920×1080（约 1MB）；轻量档每格 1280×720（约 440KB），慢网络更省流量</span>
+            </div>
+            <div class="seg" id="wq-seg">
+              <button data-wq="hd">高清</button>
+              <button data-wq="lite">轻量</button>
+            </div>
+          </div>
+
+          <div class="set-row">
+            <div class="set-label">
               <strong>背景遮罩浓度</strong>
               <span>数值越大壁纸越淡、文字越清晰</span>
             </div>
@@ -474,6 +485,7 @@ const widths = [
     width: 'normal',
     bg: 'wallpaper',
     wallpaper: 'sunset',
+    wq: 'hd',
     scrim: 0.45,
   };
   const html = document.documentElement;
@@ -485,6 +497,7 @@ const widths = [
     width: string;
     bg: string;
     wallpaper: string;
+    wq: string;
     scrim: number;
   }
 
@@ -501,6 +514,7 @@ const widths = [
       // 兼容早期版本的「关闭背景照片」设置
       if (!p.bg) p.bg = (p as { photo?: string }).photo === 'off' ? 'solid' : 'wallpaper';
       if (!p.wallpaper) p.wallpaper = 'sunset';
+      if (!p.wq) p.wq = 'hd';
     } catch (e) {
       /* ignore */
     }
@@ -522,6 +536,7 @@ const widths = [
     html.setAttribute('data-width', p.width);
     html.setAttribute('data-bg', p.bg);
     html.setAttribute('data-wallpaper', p.wallpaper);
+    html.setAttribute('data-wq', p.wq);
     html.setAttribute('data-dark', DARK.indexOf(p.theme) >= 0 ? '1' : '0');
     html.style.setProperty('--scrim-a', String(p.scrim));
   }
@@ -548,6 +563,9 @@ const widths = [
     });
     document.querySelectorAll<HTMLElement>('.swatch[data-wallpaper]').forEach((el) => {
       el.classList.toggle('on', el.dataset.wallpaper === prefs.wallpaper);
+    });
+    document.querySelectorAll<HTMLElement>('#wq-seg button').forEach((el) => {
+      el.classList.toggle('on', el.dataset.wq === prefs.wq);
     });
     const range = document.getElementById('scrim-range') as HTMLInputElement | null;
     if (range) range.value = String(prefs.scrim);
@@ -597,6 +615,16 @@ const widths = [
   document.querySelectorAll<HTMLElement>('.swatch[data-wallpaper]').forEach((el) => {
     el.addEventListener('click', () => {
       prefs.wallpaper = el.dataset.wallpaper ?? 'sunset';
+      apply(prefs);
+      save(prefs);
+      mark();
+    });
+  });
+
+  // 壁纸画质：高清 / 轻量
+  document.querySelectorAll<HTMLElement>('#wq-seg button').forEach((el) => {
+    el.addEventListener('click', () => {
+      prefs.wq = el.dataset.wq ?? 'hd';
       apply(prefs);
       save(prefs);
       mark();

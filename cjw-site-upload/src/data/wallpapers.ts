@@ -14,7 +14,8 @@
  * 想加壁纸：把新图拼进 public/images/wallpapers.jpg（改大格子数），
  * 然后在这里加一行、并同步修改 COLS / ROWS 即可。
  */
-export const WALLPAPER_PACK = '/images/wallpapers.jpg';
+export const WALLPAPER_PACK = '/images/wallpapers.jpg'; // 轻量档：每格 1280×720，约 440KB
+export const WALLPAPER_PACK_HD = '/images/wallpapers-hd.jpg'; // 高清档：每格 1920×1080，约 1.0MB
 export const COLS = 2;
 export const ROWS = 2;
 

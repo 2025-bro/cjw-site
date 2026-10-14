@@ -30,6 +30,11 @@ body::before {
   background-size: var(--wp-size, 200% 200%);
   background-position: var(--wp-pos, 0% 0%);
 }
+
+/* 画质档位：高清档换用 1080p 合集（设置里可切换） */
+html[data-wq='hd'] body::before {
+  background-image: url('/images/wallpapers-hd.jpg');
+}
 body::after {
   z-index: -1;
   background: rgb(var(--scrim-rgb, 250 252 255) / var(--scrim-a, 0.45));
