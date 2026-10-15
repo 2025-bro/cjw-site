@@ -5,7 +5,10 @@ import { formatDate } from '../../lib/format';
 
 export async function getStaticPaths() {
   const notes = await getCollection('notes');
-  return notes.map((n) => ({ params: { slug: n.id }, props: { entry: n } }));
+  // links 有专属页面 /private/links/，不走通用笔记路由
+  return notes
+    .filter((n) => n.id !== 'links')
+    .map((n) => ({ params: { slug: n.id }, props: { entry: n } }));
 }
 
 const { entry } = Astro.props;

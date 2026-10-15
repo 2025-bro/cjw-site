@@ -1,0 +1,278 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const notes = await getCollection('notes');
+const entry = notes.find((n) => n.id === 'links');
+
+interface LinkItem {
+  title: string;
+  url: string;
+  host: string;
+  note: string;
+  hue: number;
+}
+interface Group {
+  name: string;
+  links: LinkItem[];
+  texts: string[];
+}
+
+/** 支持 `- [标题](网址) 备注` 和 `- 网址 备注` 两种写法 */
+const LINK_RE =
+  /^[-*]\s+(?:\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)|(https?:\/\/\S+))\s*(?:[-—–:：]\s*)?(.*)$/;
+
+function parseLinks(body: string): Group[] {
+  const groups: Group[] = [];
+  if (!body) return groups;
+  let current: Group | null = null;
+  const ensure = (): Group => {
+    if (!current) {
+      current = { name: '未分组', links: [], texts: [] };
+      groups.push(current);
+    }
+    return current;
+  };
+
+  for (const raw of body.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith('# ')) continue; // 一级标题已经显示在页面顶部
+    const head = line.match(/^#{2,4}\s+(.+)$/);
+    if (head) {
+      current = { name: head[1].trim(), links: [], texts: [] };
+      groups.push(current);
+      continue;
+    }
+    const m = line.match(LINK_RE);
+    if (m) {
+      const url = (m[2] ?? m[3] ?? '').trim();
+      const title = (m[1] ?? url).trim();
+      let host = '';
+      try {
+        host = new URL(url).hostname.replace(/^www\./, '');
+      } catch {
+        host = url;
+      }
+      const hue = [...(host || title)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
+      ensure().links.push({ title, url, host, note: (m[4] ?? '').trim(), hue });
+      continue;
+    }
+    ensure().texts.push(line.replace(/^[-*]\s+/, ''));
+  }
+  return groups.filter((g) => g.links.length || g.texts.length);
+}
+
+const groups = parseLinks(entry?.body ?? '');
+const total = groups.reduce((n, g) => n + g.links.length, 0);
+---
+
+<Base title="链接墙" description="内部常用链接，需登录查看">
+  <div class="container">
+    <header class="page-head">
+      <h1>🔗 {entry?.data.title ?? '链接墙'}</h1>
+      <p>
+        共 <strong>{total}</strong> 个链接。全部写在
+        <code>src/content/private/links.md</code> 这一个文件里，提交后自动更新。
+      </p>
+    </header>
+
+    {
+      entry ? (
+        <>
+          <div class="search-box" style="max-width:none;margin:0 0 20px">
+            <span class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+            </span>
+            <input type="text" id="link-search" placeholder="搜索标题 / 网址 / 备注…" />
+          </div>
+
+          <div id="link-groups">
+            {groups.map((g) => (
+              <section class="lk-group" data-group>
+                {g.links.length > 0 && (
+                  <h2>
+                    {g.name}
+                    <span class="lk-count">{g.links.length}</span>
+                  </h2>
+                )}
+                {g.texts.map((t) => (
+                  <p class="lk-text">{t}</p>
+                ))}
+                <div class="lk-list">
+                  {g.links.map((l) => (
+                    <a
+                      class="lk"
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-key={`${l.title} ${l.url} ${l.note} ${l.host}`.toLowerCase()}
+                    >
+                      <span class="lk-ico" style={`--h:${l.hue}`}>
+                        {l.title.slice(0, 1).toUpperCase()}
+                      </span>
+                      <span class="lk-body">
+                        <span class="lk-title">{l.title}</span>
+                        {l.note && <span class="lk-note">{l.note}</span>}
+                        <span class="lk-host">{l.host}</span>
+                      </span>
+                      <span class="lk-go" aria-hidden="true">
+                        ↗
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+
+          <div class="empty" id="link-empty" style="display:none">
+            没有匹配的链接
+          </div>
+
+          <div class="notice" style="margin-top:28px">
+            ✏️ 加/改链接：编辑 <code>src/content/private/links.md</code>，格式是
+            <code>## 分组名</code> + 每行 <code>- [标题](网址) 备注</code>（备注可省略；
+            直接写 <code>- 网址</code> 也认，标题就用网址本身）。
+          </div>
+        </>
+      ) : (
+        <div class="notice">
+          ⚠️ 还没找到链接文件。请在 <code>src/content/private/</code> 下创建
+          <code>links.md</code>，内容形如：
+          <br />
+          <code>## 分组名</code>
+          <br />
+          <code>- [标题](https://example.com) 备注</code>
+        </div>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .lk-group {
+    margin: 0 0 26px;
+  }
+  .lk-group h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: calc(17px * var(--fs, 1));
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .lk-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 9px;
+  }
+  .lk-text {
+    margin: 0 0 10px;
+    color: var(--text-2);
+    font-size: calc(14px * var(--fs, 1));
+  }
+  .lk-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 12px;
+  }
+  .lk {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px 15px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    background: color-mix(in srgb, var(--glass-strong) 93%, var(--bg));
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: transform 0.14s ease, border-color 0.14s ease;
+  }
+  .lk:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
+  .lk-ico {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+    background: linear-gradient(140deg, hsl(var(--h) 68% 58%), hsl(calc(var(--h) + 38) 66% 46%));
+    box-shadow: 0 3px 10px hsl(var(--h) 50% 40% / 0.28);
+  }
+  .lk-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .lk-title {
+    font-weight: 600;
+    font-size: calc(15px * var(--fs, 1));
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lk-note {
+    font-size: calc(12.8px * var(--fs, 1));
+    color: var(--text-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lk-host {
+    font-size: 12px;
+    color: var(--text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lk-go {
+    margin-left: auto;
+    color: var(--text-3);
+    font-size: 15px;
+  }
+  .lk:hover .lk-go {
+    color: var(--accent);
+  }
+</style>
+
+<script>
+  const input = document.getElementById('link-search') as HTMLInputElement | null;
+  const cards = Array.from(document.querySelectorAll('.lk')) as HTMLElement[];
+  const sections = Array.from(document.querySelectorAll('[data-group]')) as HTMLElement[];
+  const empty = document.getElementById('link-empty');
+
+  function apply() {
+    const kw = (input?.value ?? '').trim().toLowerCase();
+    let shown = 0;
+    cards.forEach((card) => {
+      const hit = !kw || (card.dataset.key ?? '').includes(kw);
+      card.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    });
+    sections.forEach((sec) => {
+      const any = Array.from(sec.querySelectorAll('.lk')).some((c) => (c as HTMLElement).style.display !== 'none');
+      sec.style.display = any ? '' : 'none';
+    });
+    if (empty) empty.style.display = shown ? 'none' : '';
+  }
+
+  input?.addEventListener('input', apply);
+</script>
