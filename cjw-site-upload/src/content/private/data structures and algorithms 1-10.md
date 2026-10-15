@@ -1,7 +1,7 @@
 ---
 title: 数据结构第1—10章完整复习题单
 date: 2026-10-15
-author: SJH
+author: DXY
 ---
 [数据结构1-10章训练题单.md](https://github.com/user-attachments/files/33491123/1-10.md)
 # 数据结构第1—10章完整复习题单
