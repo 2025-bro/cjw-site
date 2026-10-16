@@ -40,6 +40,7 @@ author: CJW
 - [Kurose & Ross 官方课件](https://gaia.cs.umass.edu/kurose_ross/ppt.php) — 计算机网络课件原版
 - [MIT OpenCourseWare](https://ocw.mit.edu/) — 公开课
 - [中国大学 MOOC](https://www.icourse163.org/) — 国内课程
+- [Stanford CS336](https://www.bilibili.com/video/BV11LEA6eEuj/?spm_id_from=333.1391.0.0&vd_source=1c4a855dc2fe9ce02dbf66eed0c27113) - 国外公开课
 - [iLovePDF](https://www.ilovepdf.com/zh-cn) — PDF 压缩 / 合并 / 拆分
 
 ## 🔌 DSH 插件
