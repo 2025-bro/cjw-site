@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Kosaraju 强连通分量 · 算法动画</title>
+<style>
+:root{
+  --panel:#0d1526; --line:#1c2739; --text:#e3e9f3; --muted:#7b8aa3;
+  --sky:#38bdf8; --amber:#fbbf24; --green:#34d399; --violet:#a78bfa;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;}
+body{
+  background:radial-gradient(1100px 620px at 78% -12%, #221a44 0%, #070b14 58%), #070b14;
+  color:var(--text);
+  font-family:ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+.app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:14px;padding:16px 18px;}
+
+/* ---------- 顶栏 ---------- */
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.brand h1{margin:0;font-size:20px;letter-spacing:.5px;}
+.brand h1 em{font-style:normal;color:var(--violet);}
+.brand p{margin:6px 0 0;font-size:13px;color:var(--muted);}
+.brand p b{color:#c7d3e6;font-weight:600;}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;}
+.legend span{display:flex;align-items:center;gap:6px;}
+.legend i{width:12px;height:12px;border-radius:4px;border:2px solid #31405c;display:inline-block;}
+
+/* ---------- 主体 ---------- */
+main{display:grid;grid-template-columns:minmax(0,1fr) 396px;gap:14px;min-height:0;}
+
+.stage{
+  position:relative;
+  display:grid;grid-template-rows:minmax(0,1fr) auto;gap:0;min-height:0;
+  background:linear-gradient(165deg,#0e1428 0%,#0a1020 100%);
+  border:1px solid var(--line);border-radius:18px;padding:6px;overflow:hidden;
+}
+.graph-wrap{min-height:0;display:flex;align-items:center;justify-content:center;padding:4px;}
+svg{width:100%;height:100%;display:block;}
+
+.gmark{
+  position:absolute;top:14px;right:20px;font-family:ui-monospace,Consolas,monospace;
+  font-size:25px;font-weight:700;color:#1f2c44;letter-spacing:1px;pointer-events:none;
+  transition:color .35s ease;
+}
+.gmark.rev{color:#6d28d9;}
+
+.caption{
+  display:flex;gap:12px;align-items:flex-start;
+  margin:6px 8px 8px;padding:12px 14px;border-radius:12px;
+  background:#0a1222;border:1px solid #18233a;min-height:62px;
+}
+.caption .kind{
+  flex:none;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;
+  border:1px solid #24314d;color:var(--violet);background:#0e1a2e;line-height:1.4;margin-top:1px;
+  white-space:nowrap;
+}
+.caption p{margin:0;font-size:14px;line-height:1.7;color:#c7d3e6;}
+.caption b{color:#fff;font-weight:700;}
+
+/* ---------- 右侧面板 ---------- */
+.panel{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto;padding-right:3px;}
+.panel::-webkit-scrollbar{width:8px;}
+.panel::-webkit-scrollbar-thumb{background:#1e293b;border-radius:4px;}
+.block{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 13px;}
+.block-title{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  font-size:12.5px;font-weight:700;color:#9fb0c9;letter-spacing:.7px;margin-bottom:10px;
+}
+.hint{font-weight:400;color:#5d6d85;font-size:11.5px;letter-spacing:0;}
+
+.order{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-height:34px;}
+.chip{
+  min-width:30px;height:30px;padding:0 5px;border-radius:8px;display:grid;place-items:center;
+  font-family:ui-monospace,Consolas,monospace;font-size:14px;font-weight:700;
+  background:#16233a;border:1px solid #26364f;color:#b8c8dd;transition:.2s;
+}
+.chip.new{background:#123a2b;border-color:var(--green);color:#6ee7b7;box-shadow:0 0 0 3px rgba(52,211,153,.14);}
+.chip.done{opacity:.32;}
+.chip.active{background:#2b2350;border-color:var(--violet);color:#c4b5fd;box-shadow:0 0 0 3px rgba(167,139,250,.15);}
+.empty{color:#4a5a72;font-size:13px;}
+
+.sccs{display:flex;flex-direction:column;gap:7px;min-height:34px;}
+.scc-card{
+  display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:10px;
+  background:color-mix(in srgb, var(--c) 12%, #0a1220);
+  border:1px solid color-mix(in srgb, var(--c) 45%, transparent);
+  font-size:13px;
+}
+.scc-card.forming{opacity:.72;border-style:dashed;}
+.scc-id{font-family:ui-monospace,Consolas,monospace;font-weight:700;color:var(--c);font-size:12px;}
+.scc-nodes{font-family:ui-monospace,Consolas,monospace;color:#cfd9e8;letter-spacing:.4px;}
+.tag{margin-left:auto;font-size:10.5px;color:#8b9ab2;border:1px dashed #3a4a63;border-radius:999px;padding:1px 7px;}
+
+.code{font-family:ui-monospace,Consolas,monospace;font-size:11px;line-height:1.72;overflow-x:auto;}
+.code .ln{
+  display:block;padding:0 7px;border-radius:6px;color:#8fa2bd;
+  border-left:2px solid transparent;white-space:pre;transition:opacity .25s,background .18s,color .18s;
+}
+.code .ln.dim{opacity:.3;}
+.code .ln.on{background:#1a1638;color:#eaf4ff;border-left-color:var(--violet);opacity:1;}
+.code .ln.on .cm{color:#b4a8e8;}
+.code .cm{color:#4e5f78;margin-left:12px;}
+.code .num{display:inline-block;width:19px;color:#37475e;}
+
+/* ---------- 控制条 ---------- */
+.controls{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:9px 13px;
+}
+button{
+  background:#17223a;color:var(--text);border:1px solid #263452;border-radius:10px;
+  padding:8px 14px;font:inherit;font-size:13.5px;cursor:pointer;transition:.15s;
+  white-space:nowrap;
+}
+button:hover{background:#1e2c49;border-color:#37496b;}
+button:active{transform:translateY(1px);}
+button.primary{
+  background:linear-gradient(135deg,#8b5cf6,#6366f1);border-color:transparent;color:#fff;font-weight:600;
+  min-width:104px;
+}
+button.primary:hover{filter:brightness(1.12);}
+button:disabled{opacity:.36;cursor:not-allowed;transform:none;}
+input[type=range]{flex:1;min-width:110px;accent-color:#a78bfa;height:4px;cursor:pointer;}
+.counter{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--muted);min-width:74px;text-align:right;}
+select{
+  background:#17223a;color:var(--text);border:1px solid #263452;border-radius:9px;
+  padding:7px 8px;font:inherit;font-size:13px;cursor:pointer;
+}
+
+/* ---------- SVG ---------- */
+.node .nid{font-family:ui-monospace,Consolas,monospace;font-size:21px;font-weight:700;user-select:none;}
+.node .bt{font-family:ui-monospace,Consolas,monospace;font-size:11px;font-weight:700;}
+.halo{opacity:0;transform-box:fill-box;transform-origin:center;pointer-events:none;}
+.halo.active{animation:haloPulse 1.35s ease-out infinite;}
+.halo.burst{animation:haloBurst .95s ease-out forwards;}
+@keyframes haloPulse{0%{opacity:.9;transform:scale(.86);}100%{opacity:0;transform:scale(1.45);}}
+@keyframes haloBurst{0%{opacity:1;transform:scale(.8);}100%{opacity:0;transform:scale(1.7);}}
+.edge{transition:stroke .2s ease, stroke-width .2s ease, opacity .2s ease;}
+.edge.flow{animation:flow .55s linear infinite;}
+@keyframes flow{to{stroke-dashoffset:-16;}}
+
+@media (max-width:1000px){
+  body{overflow:auto;}
+  .app{height:auto;min-height:100vh;}
+  main{grid-template-columns:1fr;}
+  .stage{min-height:440px;}
+  .panel{overflow:visible;}
+}
+</style>
+</head>
+<body>
+<div class='app'>
+
+  <header class='topbar'>
+    <div class='brand'>
+      <h1>Kosaraju 求<em>强连通分量</em></h1>
+      <p>两遍 DFS：先记录<b>完成顺序</b>，再在<b>反图</b>上逆序 DFS —— 一次圈出一个 SCC</p>
+    </div>
+    <div class='legend'>
+      <span><i style='background:#0c1526;border-color:#31405c'></i>未访问</span>
+      <span><i style='background:#152b47;border-color:#38bdf8'></i>已访问</span>
+      <span><i style='background:#3a2a08;border-color:#fbbf24'></i>当前节点</span>
+      <span><i style='background:rgba(167,139,250,.3);border-color:#a78bfa'></i>当前 SCC</span>
+      <span><i style='background:rgba(52,211,153,.26);border-color:#34d399'></i>已确定 SCC</span>
+    </div>
+  </header>
+
+  <main>
+    <section class='stage'>
+      <div class='gmark' id='gmark'>G</div>
+      <div class='graph-wrap'><svg id='graph' viewBox='0 0 860 620' preserveAspectRatio='xMidYMid meet'></svg></div>
+      <div class='caption'>
+        <span class='kind' id='kind'>准备</span>
+        <p id='msg'>点击「播放」开始演示。</p>
+      </div>
+    </section>
+
+    <aside class='panel'>
+      <div class='block'>
+        <div class='block-title'><span id='orderTitle'>完成顺序 order</span><span class='hint' id='orderHint'>后序</span></div>
+        <div class='order' id='order'><span class='empty'>空</span></div>
+      </div>
+      <div class='block'>
+        <div class='block-title'>SCC <span class='hint' id='sccCount'>0 个</span></div>
+        <div class='sccs' id='sccs'><span class='empty'>第二轮才会产生</span></div>
+      </div>
+      <div class='block'>
+        <div class='block-title'>伪代码</div>
+        <div class='code' id='code'></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class='controls'>
+    <button id='btnReset' title='回到开头'>⏮</button>
+    <button id='btnPrev'>◀ 上一步</button>
+    <button id='btnPlay' class='primary'>▶ 播放</button>
+    <button id='btnNext'>下一步 ▶</button>
+    <input id='scrub' type='range' min='0' max='1' value='0'>
+    <span id='counter' class='counter'>1 / 1</span>
+    <select id='speed'>
+      <option value='0.5'>0.5×</option>
+      <option value='1' selected>1×</option>
+      <option value='1.5'>1.5×</option>
+      <option value='2'>2×</option>
+      <option value='3'>3×</option>
+    </select>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* =========================================================
+   1. 图（与 Tarjan 动画同一张图，方便对比输出顺序）
+   ========================================================= */
+var ADJ = {
+  0:[1],      1:[2],      2:[0,3],    3:[4,6],
+  4:[5,9],    5:[3,9],    6:[7],      7:[8],
+  8:[6],      9:[]
+};
+var IDS = [0,1,2,3,4,5,6,7,8,9];
+
+var POS = {
+  0:{x:130,y:250},  1:{x:215,y:130},  2:{x:300,y:250},
+  3:{x:450,y:250},  4:{x:450,y:400},  5:{x:300,y:400},
+  6:{x:620,y:250},  7:{x:730,y:130},  8:{x:730,y:380},
+  9:{x:300,y:540}
+};
+
+var EDGES = [];
+IDS.forEach(function(u){ ADJ[u].forEach(function(v){ EDGES.push([u,v]); }); });
+
+/* 反图：radj[u] = 所有指向 u 的点 */
+var RADJ = {};
+IDS.forEach(function(n){ RADJ[n]=[]; });
+IDS.forEach(function(u){ ADJ[u].forEach(function(v){ RADJ[v].push(u); }); });
+
+var SCC_COLORS = ['#f43f5e','#a78bfa','#34d399','#22d3ee','#e879f9','#a3e635'];
+var C_DEF='#2b3a52', C_TREE='#38bdf8', C_SKIP='#94a3b8', C_AMBER='#fbbf24';
+
+/* 伪代码 */
+var CODE = [
+  ['def dfs1(u):','第一轮：正图 G'],
+  ['    vis[u] = True',''],
+  ['    for v in adj[u]:',''],
+  ['        if not vis[v]: dfs1(v)',''],
+  ['    order.append(u)','后序：完成即入列'],
+  ['',''],
+  ['def dfs2(u):','第二轮：反图 Gᵀ'],
+  ['    vis[u] = True; scc.add(u)',''],
+  ['    for v in radj[u]:',''],
+  ['        if not vis[v]: dfs2(v)',''],
+  ['',''],
+  ['for u in V:','第一轮主循环'],
+  ['    if not vis[u]: dfs1(u)',''],
+  ['',''],
+  ['clear(vis)',''],
+  ['for u in reversed(order):','第二轮主循环'],
+  ['    if not vis[u]:',''],
+  ['        dfs2(u)','本次访问到的点集 = 一个 SCC']
+];
+var P1_LINES = [0,1,2,3,4,11,12];
+var P2_LINES = [6,7,8,9,14,15,16,17];
+
+/* =========================================================
+   2. 生成所有帧
+   ========================================================= */
+function buildFrames(){
+  var F=[], vis={}, order=[], sccs=[], treeEdges=[];
+  var phase=1, curNode=null, curEdge=null, etype=null, line=[], msg='', procIdx=0;
+
+  function snap(kind,o){
+    o=o||{};
+    F.push({
+      kind:kind,
+      phase:(o.phase!==undefined)?o.phase:phase,
+      msg:(o.msg!==undefined)?o.msg:msg,
+      line:((o.line!==undefined)?o.line:line).slice(),
+      vis:Object.assign({},vis),
+      order:order.slice(),
+      sccs:sccs.map(function(s){return {id:s.id,color:s.color,done:s.done,nodes:s.nodes.slice()};}),
+      treeEdges:treeEdges.map(function(t){return t.slice();}),
+      curNode:(o.curNode!==undefined)?o.curNode:curNode,
+      curEdge:(o.curEdge!==undefined)?o.curEdge:(curEdge?curEdge.slice():null),
+      etype:(o.etype!==undefined)?o.etype:etype,
+      procIdx:(o.procIdx!==undefined)?o.procIdx:procIdx,
+      flash:o.flash||null
+    });
+  }
+
+  snap('init',{msg:'**第一轮**：在正图 G 上做 DFS，每个点「出边处理完」时压入 order（后序）。**第二轮**：清空标记、把所有边反向得到 Gᵀ，再按 order 的**逆序**在 Gᵀ 上 DFS —— 每次 DFS 圈到的点，就是一个强连通分量。'});
+
+  /* ---------- 第一轮 ---------- */
+  function dfs1(u){
+    vis[u]=true; curNode=u; curEdge=null; etype=null; line=[1];
+    snap('enter',{msg:'进入 **'+u+'**：标记 vis['+u+'] = True，然后依次处理它的出边。'});
+
+    var list=ADJ[u];
+    for(var i=0;i<list.length;i++){
+      var v=list[i];
+      curEdge=[u,v];
+      if(!vis[v]){
+        etype='tree'; treeEdges.push([u,v]); line=[3];
+        snap('e1-tree',{msg:'边 '+u+' → '+v+'：'+v+' 还没访问过 → 沿树边深入 '+v+'。（第一轮只要能走通就行，不用在意边的类型）'});
+        dfs1(v);
+        curNode=u; curEdge=[u,v]; etype='tree'; line=[2];
+      } else {
+        etype='skip'; line=[3];
+        snap('e1-skip',{msg:'边 '+u+' → '+v+'：'+v+' 已经访问过了 → 直接跳过，这就是第一轮唯一要做的判断。'});
+      }
+    }
+
+    curEdge=null; etype=null;
+    order.push(u); line=[4];
+    snap('finish',{msg:'**'+u+'** 的所有出边处理完毕 → 把 '+u+' 追加进 order。当前 order = [ '+order.join(', ')+' ]'});
+  }
+
+  for(var s=0;s<IDS.length;s++){
+    var root=IDS[s];
+    if(vis[root]) continue;
+    line=[11,12];
+    snap('loop',{msg:'第一轮主循环：取到 u = **'+root+'**，未访问 → 调用 dfs1('+root+')。'});
+    dfs1(root);
+  }
+
+  line=[4];
+  snap('phase1-done',{msg:'第一轮结束。完成顺序 order = [ '+order.join(', ')+' ]。注意 **0 最后完成**，9 最先完成 —— 完成时间越晚，在缩点后的 DAG 里就越「靠上游」。'});
+
+  /* ---------- 切换到第二轮 ---------- */
+  phase=2; vis={}; treeEdges.length=0; procIdx=0;
+  curNode=null; curEdge=null; etype=null; line=[14];
+  snap('reset',{phase:2,procIdx:0,msg:'**清空 vis**，并把所有边**反向**得到转置图 **Gᵀ**（看箭头方向，点的位置没动）。接下来按 order 的逆序处理。'});
+
+  function dfs2(u,comp){
+    vis[u]=true; comp.nodes.push(u);
+    curNode=u; curEdge=null; etype=null; line=[7];
+    snap('enter2',{msg:'在 **Gᵀ** 中访问 **'+u+'**，标记并归入 SCC #'+comp.id+'。Gᵀ 里 '+u+' 的出边来自 radj['+u+'] = [ '+(RADJ[u].length?RADJ[u].join(', '):'空')+' ]。'});
+
+    var list=RADJ[u];
+    for(var i=0;i<list.length;i++){
+      var v=list[i];
+      curEdge=[u,v];
+      if(!vis[v]){
+        etype='tree'; treeEdges.push([v,u]); line=[9];
+        snap('e2-tree',{msg:'Gᵀ 中 '+u+' → '+v+'（即原图 '+v+' → '+u+'）：'+v+' 未访问 → 继续深入。**Gᵀ 里 u 能走到谁，就代表原图里谁能走到 u**，再加上第一轮已经保证 u 能走到它们，两边互相可达。'});
+        dfs2(v,comp);
+        curNode=u; curEdge=[u,v]; etype='tree'; line=[8];
+      } else {
+        etype='skip'; line=[9];
+        snap('e2-skip',{msg:'Gᵀ 中 '+u+' → '+v+'：'+v+' 已经访问过了 → 跳过。'});
+      }
+    }
+
+    curEdge=null; etype=null;
+  }
+
+  var rev=order.slice().reverse();
+  for(var k=0;k<rev.length;k++){
+    var u=rev[k];
+    if(vis[u]) continue;
+    procIdx=k;
+    var comp={id:sccs.length+1,color:SCC_COLORS[sccs.length%SCC_COLORS.length],done:false,nodes:[]};
+    sccs.push(comp);
+    line=[15,16];
+    snap('pick',{procIdx:k,msg:'按逆序取 u = **'+u+'**，还没访问 → 在 Gᵀ 上从 '+u+' 出发 dfs2。Gᵀ 里从 '+u+' 走不出去多远，正好只圈住一个 SCC。'});
+    dfs2(u,comp);
+    comp.done=true;
+    line=[17];
+    var disp=comp.nodes.slice().sort(function(a,b){return a-b;});
+    snap('scc',{procIdx:k,flash:comp.nodes.slice(),msg:'**SCC #'+comp.id+' = { '+disp.join(', ')+' }** 确定 ✅ 编号顺序就是缩点后 DAG 的**正拓扑序**（上游先出）。'});
+  }
+
+  snap('done',{msg:'两轮结束，共切出 **'+sccs.length+' 个强连通分量**。完成顺序的逆序保证：轮到一个点时，它所在 SCC 的所有后继早已被别的 SCC 收走，所以这一次 DFS 不会串门。'});
+
+  return F;
+}
+
+var frames = buildFrames();
+
+/* =========================================================
+   3. 构建 SVG
+   ========================================================= */
+var NS='http://www.w3.org/2000/svg';
+var svg=document.getElementById('graph');
+
+function mk(tag,attrs){
+  var e=document.createElementNS(NS,tag);
+  if(attrs){ for(var k in attrs) e.setAttribute(k,attrs[k]); }
+  return e;
+}
+function mid(color){ return 'ar'+color.replace('#',''); }
+
+var allColors=[C_DEF,C_TREE,C_SKIP,C_AMBER].concat(SCC_COLORS);
+var defs=mk('defs');
+var seen={};
+allColors.forEach(function(c){
+  if(seen[c]) return; seen[c]=1;
+  var m=mk('marker',{
+    id:mid(c), viewBox:'0 0 10 10', refX:'8.6', refY:'5',
+    markerWidth:'9', markerHeight:'9', markerUnits:'userSpaceOnUse', orient:'auto'
+  });
+  m.appendChild(mk('path',{d:'M 0 0 L 10 5 L 0 10 L 2.6 5 Z', fill:c}));
+  defs.appendChild(m);
+});
+var glow=mk('filter',{id:'glow',x:'-60%',y:'-60%',width:'220%',height:'220%'});
+glow.appendChild(mk('feGaussianBlur',{stdDeviation:'3.2',result:'b'}));
+var mg=mk('feMerge');
+mg.appendChild(mk('feMergeNode',{in:'b'}));
+mg.appendChild(mk('feMergeNode',{in:'SourceGraphic'}));
+glow.appendChild(mg);
+defs.appendChild(glow);
+svg.appendChild(defs);
+
+var edgeLayer=mk('g');
+var nodeLayer=mk('g');
+svg.appendChild(edgeLayer);
+svg.appendChild(nodeLayer);
+
+var R=26, PAD=31;
+
+var edgeEls=[];
+EDGES.forEach(function(pair){
+  var ln=mk('line',{x1:'0',y1:'0',x2:'0',y2:'0',stroke:C_DEF,'stroke-width':'1.5',
+                    'stroke-linecap':'round','marker-end':'url(#'+mid(C_DEF)+')'});
+  ln.setAttribute('class','edge');
+  edgeLayer.appendChild(ln);
+  edgeEls.push({u:pair[0],v:pair[1],el:ln});
+});
+
+var nodeEls={};
+IDS.forEach(function(n){
+  var p=POS[n];
+  var g=mk('g'); g.setAttribute('class','node');
+
+  var halo=mk('circle',{cx:p.x,cy:p.y,r:'30',fill:'none','stroke-width':'2.6'});
+  halo.setAttribute('class','halo');
+
+  var body=mk('circle',{cx:p.x,cy:p.y,r:String(R),fill:'#0c1526',stroke:'#31405c','stroke-width':'1.6'});
+
+  var idt=mk('text',{x:p.x,y:p.y+1,'text-anchor':'middle','dominant-baseline':'central',fill:'#7c8aa5'});
+  idt.setAttribute('class','nid');
+  idt.textContent=String(n);
+
+  var badge=mk('g',{opacity:'0'});
+  var bc=mk('circle',{cx:p.x+23,cy:p.y-23,r:'11',fill:'#0b1a2c',stroke:'#34d399','stroke-width':'1.6'});
+  var bt=mk('text',{x:p.x+23,y:p.y-22,'text-anchor':'middle','dominant-baseline':'central',fill:'#6ee7b7'});
+  bt.setAttribute('class','bt');
+  badge.appendChild(bc); badge.appendChild(bt);
+
+  g.appendChild(halo); g.appendChild(body); g.appendChild(idt); g.appendChild(badge);
+  nodeLayer.appendChild(g);
+  nodeEls[n]={halo:halo,body:body,id:idt,badge:badge,bc:bc,bt:bt};
+});
+
+/* 伪代码 */
+var codeEl=document.getElementById('code');
+CODE.forEach(function(row,idx){
+  var d=document.createElement('span');
+  d.className='ln';
+  var num=document.createElement('span');
+  num.className='num'; num.textContent=(idx<10?' ':'')+String(idx);
+  d.appendChild(num);
+  if(row[0]===''){
+    d.style.height='6px';
+  } else {
+    d.appendChild(document.createTextNode(row[0]));
+  }
+  if(row[1]){
+    var cm=document.createElement('span');
+    cm.className='cm'; cm.textContent='# '+row[1];
+    d.appendChild(cm);
+  }
+  codeEl.appendChild(d);
+});
+
+/* =========================================================
+   4. 渲染
+   ========================================================= */
+var KIND={
+  init:{t:'开始',c:'#a78bfa'},
+  loop:{t:'第一轮 · 主循环',c:'#38bdf8'},
+  enter:{t:'第一轮 · 访问',c:'#38bdf8'},
+  'e1-tree':{t:'第一轮 · 深入',c:'#38bdf8'},
+  'e1-skip':{t:'第一轮 · 跳过',c:'#94a3b8'},
+  finish:{t:'第一轮 · 完成',c:'#34d399'},
+  'phase1-done':{t:'第一轮结束',c:'#34d399'},
+  reset:{t:'清空 + 反向',c:'#a78bfa'},
+  pick:{t:'第二轮 · 取点',c:'#a78bfa'},
+  enter2:{t:'第二轮 · 访问',c:'#c4b5fd'},
+  'e2-tree':{t:'第二轮 · 深入',c:'#c4b5fd'},
+  'e2-skip':{t:'第二轮 · 跳过',c:'#94a3b8'},
+  scc:{t:'SCC 确定',c:'#34d399'},
+  done:{t:'完成',c:'#34d399'}
+};
+
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmt(s){
+  return s.split('**').map(function(part,i){
+    return (i%2===1)?('<b>'+esc(part)+'</b>'):esc(part);
+  }).join('');
+}
+
+var elKind=document.getElementById('kind');
+var elMsg=document.getElementById('msg');
+var elOrder=document.getElementById('order');
+var elOrderTitle=document.getElementById('orderTitle');
+var elOrderHint=document.getElementById('orderHint');
+var elSccs=document.getElementById('sccs');
+var elSccCount=document.getElementById('sccCount');
+var elCounter=document.getElementById('counter');
+var elScrub=document.getElementById('scrub');
+var elMark=document.getElementById('gmark');
+
+var cur=0;
+
+function render(i){
+  i=Math.max(0,Math.min(frames.length-1,i));
+  cur=i;
+  var f=frames[i];
+  var rev=(f.phase===2);
+
+  var nodeScc={};
+  f.sccs.forEach(function(s){ s.nodes.forEach(function(n){ nodeScc[n]=s; }); });
+
+  /* ---- 水印 ---- */
+  if(rev){ elMark.textContent='Gᵀ'; elMark.className='gmark rev'; }
+  else { elMark.textContent='G'; elMark.className='gmark'; }
+
+  /* ---- 节点 ---- */
+  IDS.forEach(function(n){
+    var e=nodeEls[n];
+    var scc=nodeScc[n];
+    var isCur=(f.curNode===n);
+    var visited=!!f.vis[n];
+    var flashing=!!(f.flash && f.flash.indexOf(n)>=0);
+
+    var stroke='#31405c', fill='#0c1526', sw=1.6, fop=1, dash='none';
+
+    if(scc){
+      stroke=scc.color; fill=scc.color;
+      fop=scc.done?0.26:0.16;
+      sw=scc.done?2.4:2;
+      dash=scc.done?'none':'5 4';
+    } else if(visited){
+      fill='#152b47'; stroke='#38bdf8'; sw=2.2;
+    }
+    if(isCur){ stroke=C_AMBER; sw=3.4; }
+
+    e.body.setAttribute('stroke',stroke);
+    e.body.setAttribute('fill',fill);
+    e.body.setAttribute('fill-opacity',String(fop));
+    e.body.setAttribute('stroke-width',String(sw));
+    e.body.setAttribute('stroke-dasharray',dash);
+    e.id.setAttribute('fill', isCur?'#fde68a':(scc?scc.color:(visited?'#dbeafe':'#7c8aa5')));
+
+    /* 角标 */
+    if(!rev){
+      var di=f.order.indexOf(n);
+      if(di>=0){
+        e.badge.setAttribute('opacity','1');
+        e.bt.textContent='#'+(di+1);
+        e.bc.setAttribute('stroke','#34d399');
+        e.bt.setAttribute('fill','#6ee7b7');
+      } else {
+        e.badge.setAttribute('opacity','0');
+      }
+    } else if(scc){
+      e.badge.setAttribute('opacity','1');
+      e.bt.textContent=String(scc.id);
+      e.bc.setAttribute('stroke',scc.color);
+      e.bt.setAttribute('fill',scc.color);
+    } else {
+      e.badge.setAttribute('opacity','0');
+    }
+
+    if(isCur){
+      e.halo.setAttribute('stroke',C_AMBER);
+      e.halo.setAttribute('class','halo active');
+    } else if(flashing){
+      e.halo.setAttribute('stroke',scc?scc.color:'#34d399');
+      e.halo.setAttribute('class','halo burst');
+    } else {
+      e.halo.setAttribute('class','halo');
+    }
+  });
+
+  /* ---- 边（第二轮整体反向） ---- */
+  edgeEls.forEach(function(obj){
+    var eu=obj.u, ev=obj.v;
+    var from = rev?POS[ev]:POS[eu];
+    var to   = rev?POS[eu]:POS[ev];
+    var dx=to.x-from.x, dy=to.y-from.y;
+    var len=Math.sqrt(dx*dx+dy*dy)||1;
+    var x1=from.x+dx/len*PAD, y1=from.y+dy/len*PAD;
+    var x2=to.x-dx/len*PAD,   y2=to.y-dy/len*PAD;
+
+    obj.el.setAttribute('x1',String(x1));
+    obj.el.setAttribute('y1',String(y1));
+    obj.el.setAttribute('x2',String(x2));
+    obj.el.setAttribute('y2',String(y2));
+
+    var color=C_DEF, width=1.5, dash='none', op=1, flow=false, useGlow=false;
+
+    var isCur=false;
+    if(f.curEdge){
+      var cu = rev? f.curEdge[1] : f.curEdge[0];
+      var cv = rev? f.curEdge[0] : f.curEdge[1];
+      isCur = (eu===cu && ev===cv);
+    }
+    var isTree=false;
+    for(var t=0;t<f.treeEdges.length;t++){
+      if(f.treeEdges[t][0]===eu && f.treeEdges[t][1]===ev){ isTree=true; break; }
+    }
+    var su=nodeScc[eu], sv=nodeScc[ev];
+
+    if(isCur){
+      if(f.etype==='tree'){ color=C_TREE; width=3; }
+      else if(f.etype==='skip'){ color=C_SKIP; width=2.3; dash='6 5'; }
+      else { color=C_AMBER; width=3; }
+      useGlow=true;
+    } else if(su && sv && su.id===sv.id && su.done){
+      color=su.color; width=2.2; op=0.95;
+    } else if(isTree){
+      color = rev? '#8b5cf6' : C_TREE;
+      width=2; op=0.9;
+    }
+
+    obj.el.setAttribute('stroke',color);
+    obj.el.setAttribute('stroke-width',String(width));
+    obj.el.setAttribute('stroke-dasharray',dash);
+    obj.el.setAttribute('opacity',String(op));
+    obj.el.setAttribute('marker-end','url(#'+mid(color)+')');
+    if(useGlow) obj.el.setAttribute('filter','url(#glow)');
+    else obj.el.removeAttribute('filter');
+
+    var cls='edge'+(flow?' flow':'');
+    if(obj.el.getAttribute('class')!==cls) obj.el.setAttribute('class',cls);
+  });
+
+  /* ---- 说明 ---- */
+  var K=KIND[f.kind]||KIND.init;
+  elKind.textContent=K.t;
+  elKind.style.color=K.c;
+  elKind.style.borderColor=K.c;
+  elMsg.innerHTML=fmt(f.msg);
+
+  /* ---- 完成顺序 / 处理顺序 ---- */
+  if(!rev){
+    elOrderTitle.textContent='完成顺序 order';
+    elOrderHint.textContent='后序 · 最后完成的在最后';
+    if(f.order.length){
+      var h1=[];
+      for(var a=0;a<f.order.length;a++){
+        var isNew=(a===f.order.length-1);
+        h1.push('<span class="chip'+(isNew?' new':'')+'">'+f.order[a]+'</span>');
+      }
+      elOrder.innerHTML=h1.join('');
+    } else {
+      elOrder.innerHTML='<span class="empty">空</span>';
+    }
+  } else {
+    elOrderTitle.textContent='处理顺序 reversed(order)';
+    elOrderHint.textContent='从左往右取，已处理的变暗';
+    var rv=f.order.slice().reverse();
+    var h2=[];
+    for(var b=0;b<rv.length;b++){
+      var cls='chip';
+      if(b<f.procIdx) cls+=' done';
+      else if(b===f.procIdx) cls+=' active';
+      h2.push('<span class="'+cls+'">'+rv[b]+'</span>');
+    }
+    elOrder.innerHTML=h2.join('');
+  }
+
+  /* ---- SCC ---- */
+  var doneCount=0;
+  if(f.sccs.length){
+    var h3=[];
+    f.sccs.forEach(function(s){
+      if(s.done) doneCount++;
+      var arr=s.nodes.slice().sort(function(x,y){return x-y;});
+      h3.push('<div class="scc-card'+(s.done?'':' forming')+'" style="--c:'+s.color+'">'
+        +'<span class="scc-id">#'+s.id+'</span>'
+        +'<span class="scc-nodes">{ '+arr.join(', ')+' }</span>'
+        +(s.done?'':'<span class="tag">形成中</span>')
+        +'</div>');
+    });
+    elSccs.innerHTML=h3.join('');
+  } else {
+    elSccs.innerHTML='<span class="empty">第二轮才会产生</span>';
+  }
+  elSccCount.textContent=doneCount+' / '+f.sccs.length;
+
+  /* ---- 伪代码 ---- */
+  var lines=codeEl.children;
+  for(var q=0;q<lines.length;q++){
+    var on=(f.line && f.line.indexOf(q)>=0);
+    var inPhase = rev ? (P2_LINES.indexOf(q)>=0) : (P1_LINES.indexOf(q)>=0);
+    var c='ln';
+    if(!inPhase && CODE[q][0]!=='') c+=' dim';
+    if(on) c+=' on';
+    if(lines[q].className!==c) lines[q].className=c;
+  }
+
+  /* ---- 进度 ---- */
+  elCounter.textContent=(i+1)+' / '+frames.length;
+  elScrub.max=String(frames.length-1);
+  elScrub.value=String(i);
+  updateButtons();
+}
+
+/* =========================================================
+   5. 播放控制
+   ========================================================= */
+var btnPlay=document.getElementById('btnPlay');
+var btnPrev=document.getElementById('btnPrev');
+var btnNext=document.getElementById('btnNext');
+var btnReset=document.getElementById('btnReset');
+var selSpeed=document.getElementById('speed');
+
+var playing=false, playTimer=null;
+var BASE=1000;
+
+function speed(){ return parseFloat(selSpeed.value)||1; }
+
+function updateButtons(){
+  btnPlay.textContent=playing?'⏸ 暂停':'▶ 播放';
+  btnPrev.disabled=(cur<=0);
+  btnNext.disabled=(cur>=frames.length-1);
+}
+
+function stop(){
+  playing=false;
+  if(playTimer){ clearTimeout(playTimer); playTimer=null; }
+  updateButtons();
+}
+
+function tick(){
+  if(playTimer){ clearTimeout(playTimer); playTimer=null; }
+  if(!playing) return;
+  if(cur>=frames.length-1){ playing=false; updateButtons(); return; }
+  playTimer=setTimeout(function(){
+    render(cur+1);
+    tick();
+  }, BASE/speed());
+}
+
+function play(){
+  if(cur>=frames.length-1) render(0);
+  playing=true;
+  updateButtons();
+  tick();
+}
+
+btnPlay.addEventListener('click',function(){ if(playing) stop(); else play(); });
+btnPrev.addEventListener('click',function(){ stop(); render(cur-1); });
+btnNext.addEventListener('click',function(){ stop(); render(cur+1); });
+btnReset.addEventListener('click',function(){ stop(); render(0); });
+elScrub.addEventListener('input',function(){ stop(); render(parseInt(elScrub.value,10)); });
+selSpeed.addEventListener('change',function(){ if(playing){ stop(); play(); } });
+
+document.addEventListener('keydown',function(ev){
+  if(ev.key===' '){ ev.preventDefault(); if(playing) stop(); else play(); }
+  else if(ev.key==='ArrowRight'){ ev.preventDefault(); stop(); render(cur+1); }
+  else if(ev.key==='ArrowLeft'){ ev.preventDefault(); stop(); render(cur-1); }
+  else if(ev.key==='Home'){ stop(); render(0); }
+});
+
+render(0);
+})();
+</script>
+</body>
+</html>
