@@ -26,6 +26,34 @@ author: CJW
 - [AtCoder](https://atcoder.jp/) — 日赛，题目质量高
 - [CCF CSP 官网](https://www.cspro.org/) — 认证考试通知与真题
 - [cp-algorithms](https://cp-algorithms.com/) — 英文算法库，证明详细
+- [CSES Problem Set](https://cses.fi/problemset/) — 300 道精选练习题，配套《Competitive Programmer's Handbook》
+- [AtCoder Problems](https://kenkoooo.com/atcoder/#/table/) — 按难度刷题、看自己的难度通过图
+- [C++ 参考手册（中文）](https://zh.cppreference.com/w/) — 查标准库函数，顺手看复杂度
+
+## 💻 计算机基础
+
+- [CSDIY](https://csdiy.wiki/) — CS 自学路线图：课程、教材、作业一网打尽
+- [MIT Missing Semester](https://missing.csail.mit.edu/) — 命令行 / Git / 调试 / 脚本，课本不教但天天用
+- [learncpp](https://www.learncpp.com/) — C++ 系统教程，覆盖现代 C++
+- [MIT OCW](https://ocw.mit.edu/) — 公开课全套材料
+
+## 🛠 后端与数据库
+
+- [Node.js 文档](https://nodejs.org/docs/latest/api/) — 运行时 API 全套
+- [Spring 指南](https://spring.io/guides) — Java 后端主流框架的官方教程
+- [Docker 文档](https://docs.docker.com/) — 容器化与部署
+- [Redis 文档](https://redis.io/docs/latest/) — 缓存 / 消息队列常用
+- [MySQL 文档](https://dev.mysql.com/doc/) — 关系型数据库
+- [PostgreSQL 文档](https://www.postgresql.org/docs/) — 功能更全的 SQL 数据库
+
+## 🤖 AI · Agent 开发
+
+- [MCP 规范](https://modelcontextprotocol.io/) — 模型上下文协议，DSH 插件就是按这套接的
+- [DeepSeek API 文档](https://api-docs.deepseek.com/zh-cn/) — 你正在用的模型 API
+- [LangChain](https://python.langchain.com/) — Agent / 工具调用框架
+- [LlamaIndex](https://docs.llamaindex.ai/) — RAG 与数据接入
+- [OpenAI 平台文档](https://platform.openai.com/docs) — 通用 API 参考
+- [Hugging Face](https://huggingface.co/) — 模型 / 数据集 / Space
 
 ## 🧰 开发工具
 
@@ -34,13 +62,16 @@ author: CJW
 - [DeepSeek 开放平台](https://platform.deepseek.com/) — API Key / 用量
 - [npm](https://www.npmjs.com/) — 找包、看版本
 - [Shields.io](https://shields.io/) — 做徽章
+- [MDN Web Docs](https://developer.mozilla.org/zh-CN/) — 前端 / HTTP / 浏览器权威文档
+- [GitHub](https://github.com/) — 代码托管、Actions、Release
+- [Stack Overflow](https://stackoverflow.com/) — 报错先搜这里
 
 ## 🎓 课程与资料
 
 - [Kurose & Ross 官方课件](https://gaia.cs.umass.edu/kurose_ross/ppt.php) — 计算机网络课件原版
 - [MIT OpenCourseWare](https://ocw.mit.edu/) — 公开课
 - [中国大学 MOOC](https://www.icourse163.org/) — 国内课程
-- [Stanford CS336](https://www.bilibili.com/video/BV11LEA6eEuj/?spm_id_from=333.1391.0.0&vd_source=1c4a855dc2fe9ce02dbf66eed0c27113) - 国外公开课
+- [Stanford CS336](https://www.bilibili.com/video/BV11LEA6eEuj/) — 从零构建大语言模型（B 站搬运）
 - [iLovePDF](https://www.ilovepdf.com/zh-cn) — PDF 压缩 / 合并 / 拆分
 
 ## 🔌 DSH 插件
