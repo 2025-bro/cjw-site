@@ -1,7 +1,7 @@
 ---
 title: 强连通分量（Tarjan / Kosaraju）
 description: 有向图求 SCC：Tarjan 一次 DFS、Kosaraju 两次 DFS，附交互动画（点击原地展开）与缩点技巧
-category: 图论
+category: 图论 / 强连通分量
 tags: [SCC, Tarjan, Kosaraju, 缩点]
 author: CJW
 date: 2026-10-17

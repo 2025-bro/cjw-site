@@ -1,7 +1,7 @@
 ---
 title: 边双连通分量（Tarjan 求桥 + 删桥染色）
 description: 无向图求桥（low[v] > dfn[u]）后删桥 DFS 染色求边双连通分量，O(n+m)；含数组逐项解释、输出桥的两种写法、易错/易混清单与交互动画
-category: 图论
+category: 图论 / 边双与点双
 tags: [边双连通分量, 桥, Tarjan, 图论]
 author: CJW
 date: 2026-10-18
