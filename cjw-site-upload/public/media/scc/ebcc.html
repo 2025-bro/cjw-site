@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>边双连通分量 · 算法动画</title>
+<style>
+  :root{
+    --panel:#0d1526; --line:#1c2739; --text:#e3e9f3; --muted:#7b8aa3;
+    --sky:#38bdf8; --amber:#fbbf24; --green:#34d399; --red:#f87171;
+    --c1:#38bdf8; --c2:#a78bfa; --c3:#34d399;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--panel);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+       display:flex;flex-direction:column;padding:10px 14px;gap:8px}
+  header h1{font-size:17px;margin:0 0 2px}
+  header p{margin:0;color:var(--muted);font-size:12.5px}
+  main{flex:1;display:flex;gap:12px;min-height:0}
+  svg{flex:1;background:#0b1220;border:1px solid var(--line);border-radius:12px;min-width:0}
+  aside{width:236px;flex:0 0 236px;display:flex;flex-direction:column;gap:8px;min-height:0}
+  .desc{background:#101a2c;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:12.5px;min-height:64px}
+  .desc b{color:var(--amber)}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:3px 6px;text-align:center;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500}
+  .scroll{overflow:auto;background:#101a2c;border:1px solid var(--line);border-radius:10px;padding:4px 6px;flex:1}
+  footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  button{background:#16233a;color:var(--text);border:1px solid var(--line);border-radius:8px;
+         padding:6px 12px;font-size:13px;cursor:pointer}
+  button:hover{border-color:var(--sky);color:var(--sky)}
+  button:disabled{opacity:.45;cursor:default}
+  #counter{color:var(--muted);font-size:12.5px;margin-left:auto}
+  .lg{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+  .lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+</style>
+</head>
+<body>
+<header>
+  <h1>边双连通分量（Tarjan 求桥 + 删桥染色）</h1>
+  <p>桥判定：<b>low[v] &gt; dfn[u]</b> ⇒ 边 (u,v) 是桥。删掉所有桥后，剩下的连通块就是边双连通分量。</p>
+</header>
+<main>
+  <svg id='g' viewBox='0 0 900 520' preserveAspectRatio='xMidYMid meet'></svg>
+  <aside>
+    <div class='desc' id='desc'></div>
+    <div class='scroll'>
+      <table>
+        <thead><tr><th>点</th><th>dfn</th><th>low</th></tr></thead>
+        <tbody id='tbl'></tbody>
+      </table>
+    </div>
+  </aside>
+</main>
+<footer>
+  <button id='prev'>◀ 上一步</button>
+  <button id='next'>下一步 ▶</button>
+  <button id='auto'>▶ 自动</button>
+  <button id='reset'>↻ 重置</button>
+  <span class='lg'>
+    <span><i style='background:var(--c1)'></i>分量 A</span>
+    <span><i style='background:var(--c2)'></i>分量 B</span>
+    <span><i style='background:var(--c3)'></i>分量 C</span>
+    <span><i style='background:var(--red)'></i>桥</span>
+  </span>
+  <span id='counter'></span>
+</footer>
+
+<script>
+const POS = {1:[85,310],2:[215,165],3:[230,415],4:[365,270],5:[490,140],6:[505,420],7:[635,265]};
+const EDGES = [[1,2],[2,3],[3,1],[3,4],[4,5],[5,6],[6,4],[6,7]];
+
+const svg = document.getElementById('g');
+const NS = 'http://www.w3.org/2000/svg';
+const edgeEls = [], nodeEls = [], labEls = [];
+
+function el(tag, attrs) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+// edges (先画，压在节点下面)
+EDGES.forEach(([u, v], k) => {
+  const [x1, y1] = POS[u], [x2, y2] = POS[v];
+  const ln = el('line', {x1, y1, x2, y2, stroke:'#2c3a52', 'stroke-width':3, 'stroke-linecap':'round'});
+  ln.dataset.k = k;
+  svg.appendChild(ln); edgeEls.push(ln);
+});
+// nodes
+Object.keys(POS).forEach(ns => {
+  const n = +ns, [x, y] = POS[n];
+  const c = el('circle', {cx:x, cy:y, r:26, fill:'#16233a', stroke:'#2c3a52', 'stroke-width':2});
+  svg.appendChild(c); nodeEls[n] = c;
+  const t = el('text', {x, y:y+5, 'text-anchor':'middle', fill:'#e3e9f3',
+                        'font-size':17, 'font-weight':700, 'pointer-events':'none'});
+  t.textContent = n; svg.appendChild(t);
+  const lab = el('text', {x, y:y+46, 'text-anchor':'middle', fill:'#7b8aa3', 'font-size':11});
+  svg.appendChild(lab); labEls[n] = lab;
+});
+
+// ---- 生成帧 ----
+const frames = [];
+let cur = 0, dfn = {}, low = {}, br = [], comp = {};
+
+function snap(d) {
+  frames.push({d, cur, dfn:{...dfn}, low:{...low}, br:[...br], comp:{...comp}});
+}
+const E = k => EDGES[k];
+
+snap('初始状态：一张无向图（7 个点、8 条边）。先跑 Tarjan 求桥。');
+
+cur = 1; dfn[1] = low[1] = 1;
+snap('dfs(1)：dfn[1] = low[1] = 1');
+
+dfn[2] = low[2] = 2; cur = 2;
+snap('走树边 1→2：dfn[2] = low[2] = 2');
+
+snap('2→1 是父边（边编号满足 i == (f^1)），跳过');
+
+dfn[3] = low[3] = 3; cur = 3;
+snap('走树边 2→3：dfn[3] = low[3] = 3');
+
+snap('3→2 是父边，跳过');
+
+low[3] = Math.min(low[3], dfn[1]);
+snap('3→1 是回边（指向祖先 1）：low[3] = min(3, dfn[1]=1) = 1');
+
+dfn[4] = low[4] = 4; cur = 4;
+snap('走树边 3→4：dfn[4] = low[4] = 4');
+
+snap('4→3 是父边，跳过');
+
+dfn[5] = low[5] = 5; cur = 5;
+snap('走树边 4→5：dfn[5] = low[5] = 5');
+
+snap('5→4 是父边，跳过');
+
+dfn[6] = low[6] = 6; cur = 6;
+snap('走树边 5→6：dfn[6] = low[6] = 6');
+
+snap('6→5 是父边，跳过');
+
+low[6] = Math.min(low[6], dfn[4]);
+snap('6→4 是回边（指向祖先 4）：low[6] = min(6, dfn[4]=4) = 4');
+
+dfn[7] = low[7] = 7; cur = 7;
+snap('走树边 6→7：dfn[7] = low[7] = 7');
+
+snap('7→6 是父边，跳过；7 无其他边，准备回溯');
+
+br.push(7); // edge index 7 = (6,7)
+low[6] = Math.min(low[6], low[7]);
+snap('回溯到 6：low[7]=7 &gt; dfn[6]=6 ⇒ 边 <b>6-7 是桥</b>（标红）；low[6] = min(4,7) = 4');
+
+low[5] = Math.min(low[5], low[6]);
+snap('回溯到 5：low[6]=4 不大于 dfn[5]=5 ⇒ 边 5-6 不是桥；low[5] = min(5,4) = 4');
+
+low[4] = Math.min(low[4], low[5]);
+snap('回溯到 4：low[5]=4 不大于 dfn[4]=4（等于也不算）⇒ 边 4-5 不是桥；low[4] = min(4,4) = 4');
+
+br.push(3); // edge index 3 = (3,4)
+low[3] = Math.min(low[3], low[4]);
+snap('回溯到 3：low[4]=4 &gt; dfn[3]=3 ⇒ 边 <b>3-4 是桥</b>（标红）；low[3] = min(1,4) = 1');
+
+low[2] = Math.min(low[2], low[3]);
+snap('回溯到 2：low[3]=1 不大于 dfn[2]=2 ⇒ 2-3 不是桥；low[2] = min(2,1) = 1');
+
+low[1] = Math.min(low[1], low[2]);
+snap('回溯到 1：low[2]=1 不大于 dfn[1]=1 ⇒ 1-2 不是桥；low[1] = min(1,1) = 1');
+
+low[1] = Math.min(low[1], dfn[3]);
+snap('最后看 1→3（回边）：low[1] = min(1,3) = 1。Tarjan 结束：找到 2 座桥（3-4、6-7）');
+
+cur = 0;
+// 染色阶段
+[1,2,3].forEach(n => comp[n] = 1);
+snap('删掉所有桥，再从 1 号点 DFS：只能走到 1、2、3 ⇒ <b>分量 A = {1,2,3}</b>');
+
+[4,5,6].forEach(n => comp[n] = 2);
+snap('4 号点还没染色，从 4 出发：走到 4、5、6（4-5-6 构成环，边都不是桥）⇒ <b>分量 B = {4,5,6}</b>');
+
+comp[7] = 3;
+snap('7 号点单独一个点：6-7 是桥，过不去 ⇒ <b>分量 C = {7}</b>');
+
+snap('完成：边双连通分量共 <b>3 个</b>（{1,2,3}、{4,5,6}、{7}），桥 2 座（3-4、6-7）');
+
+// ---- 渲染 ----
+let i = 0, timer = null;
+const desc = document.getElementById('desc');
+const tbl = document.getElementById('tbl');
+const counter = document.getElementById('counter');
+
+function render(f) {
+  // 边
+  edgeEls.forEach((ln, k) => {
+    const isBr = f.br.includes(k);
+    ln.setAttribute('stroke', isBr ? 'var(--red)' : '#2c3a52');
+    ln.setAttribute('stroke-width', isBr ? 5 : 3);
+    ln.setAttribute('stroke-dasharray', isBr ? '9 7' : '');
+  });
+  // 点
+  Object.keys(POS).forEach(ns => {
+    const n = +ns, c = nodeEls[n], lab = labEls[n];
+    const cIdx = f.comp[n];
+    let fill = '#16233a', stroke = '#2c3a52';
+    if (cIdx === 1) fill = 'var(--c1)';
+    if (cIdx === 2) fill = 'var(--c2)';
+    if (cIdx === 3) fill = 'var(--c3)';
+    if (!cIdx && f.dfn[n]) { fill = '#14304a'; stroke = 'var(--sky)'; }
+    if (f.cur === n) { stroke = 'var(--amber)'; c.setAttribute('stroke-width', 4); }
+    else c.setAttribute('stroke-width', 2);
+    c.setAttribute('fill', fill);
+    c.setAttribute('stroke', stroke);
+    const d = f.dfn[n], l = f.low[n];
+    if (cIdx) { lab.textContent = 'C' + 'ABC'[cIdx - 1]; lab.setAttribute('fill', '#cbd5e1'); }
+    else if (d) { lab.textContent = d + '/' + l; lab.setAttribute('fill', '#7b8aa3'); }
+    else lab.textContent = '';
+  });
+  desc.innerHTML = f.d;
+  // 表格
+  const rows = Object.keys(POS).map(Number)
+    .sort((a, b) => a - b)
+    .map(n => `<tr><td>${n}</td><td>${f.dfn[n] ?? '-'}</td><td>${f.low[n] ?? '-'}</td></tr>`)
+    .join('');
+  tbl.innerHTML = rows;
+  counter.textContent = (i + 1) + ' / ' + frames.length;
+  document.getElementById('prev').disabled = i === 0;
+  document.getElementById('next').disabled = i === frames.length - 1;
+}
+
+function go(k) {
+  i = Math.max(0, Math.min(frames.length - 1, k));
+  render(frames[i]);
+}
+document.getElementById('prev').onclick = () => { stop(); go(i - 1); };
+document.getElementById('next').onclick = () => { stop(); go(i + 1); };
+document.getElementById('reset').onclick = () => { stop(); go(0); };
+function stop() { if (timer) { clearInterval(timer); timer = null; document.getElementById('auto').textContent = '▶ 自动'; } }
+document.getElementById('auto').onclick = (e) => {
+  if (timer) { stop(); return; }
+  document.getElementById('auto').textContent = '⏸ 暂停';
+  timer = setInterval(() => { if (i >= frames.length - 1) { stop(); return; } go(i + 1); }, 1100);
+};
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') { stop(); go(i + 1); }
+  if (e.key === 'ArrowLeft') { stop(); go(i - 1); }
+});
+const _q = new URLSearchParams(location.search).get('step');
+if (_q !== null && _q !== '' && !Number.isNaN(+_q)) go(+_q); else go(0);
+</script>
+</body>
+</html>
