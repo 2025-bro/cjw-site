@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { formatDate } from '../../lib/format';
 import { TAXONOMY, FALLBACK_MAJOR } from '../../data/taxonomy';
+import { MAJOR_INTRO } from '../../data/major-intro';
 
 /**
  * 分类规则说明（分类表本身在 src/data/taxonomy.ts，要新增分类改那个文件）
@@ -50,6 +51,7 @@ const groups = [...new Set(items.map((i) => i.major))]
   })
   .map((major) => ({
     major,
+    intro: MAJOR_INTRO[major],
     items: items
       .filter((i) => i.major === major)
       .sort(
@@ -124,6 +126,28 @@ const minorTotal = Object.values(TAXONOMY).reduce((n, list) => n + list.length, 
               <h2>{g.major}</h2>
               <span class="group-count">{g.items.length} 个模板</span>
             </div>
+            {
+              g.intro && (
+                <details class="major-intro">
+                  <summary>
+                    <span class="mi-tag">概念共识</span>
+                    {g.intro.tagline}
+                  </summary>
+                  <div class="mi-body">
+                    {g.intro.sections.map((s) => (
+                      <div class="mi-sec">
+                        <h3>{s.h}</h3>
+                        <ul>
+                          {s.items.map((it) => (
+                            <li>{it}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )
+            }
             <div class="card-list">
               {g.items.map((it) => (
                 <a
@@ -195,6 +219,61 @@ const minorTotal = Object.values(TAXONOMY).reduce((n, list) => n + list.length, 
   }
   .tpl-group {
     margin-bottom: 34px;
+  }
+
+  /* 每个大类前面的「概念共识 + 基础常识」 */
+  .major-intro {
+    margin: 0 0 18px;
+    padding: 12px 18px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--glass-strong) 92%, var(--bg));
+    font-size: 13.5px;
+  }
+  .major-intro summary {
+    cursor: pointer;
+    color: var(--text-2);
+    line-height: 1.7;
+  }
+  .major-intro summary:hover {
+    color: var(--accent);
+  }
+  .mi-tag {
+    display: inline-block;
+    margin-right: 8px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .mi-body {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 26px;
+  }
+  @media (max-width: 820px) {
+    .mi-body {
+      grid-template-columns: 1fr;
+    }
+  }
+  .mi-sec h3 {
+    margin: 6px 0 4px;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .mi-sec ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+  .mi-sec li {
+    margin: 3px 0;
+    color: var(--text-2);
+    line-height: 1.65;
   }
   .group-count {
     font-size: 13px;
