@@ -66,6 +66,7 @@ export const TAXONOMY: Record<string, string[]> = {
     '基环树',
     '差分约束',
     '欧拉路',
+    '环计数',
     '斯坦纳树',
     '最小树形图',
   ],
