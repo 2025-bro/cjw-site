@@ -65,6 +65,7 @@ author: CJW
 - [MDN Web Docs](https://developer.mozilla.org/zh-CN/) — 前端 / HTTP / 浏览器权威文档
 - [GitHub](https://github.com/) — 代码托管、Actions、Release
 - [Stack Overflow](https://stackoverflow.com/) — 报错先搜这里
+- [桌宠网站](https://petdex.dev/) — 找桌宠
 
 ## 🎓 课程与资料
 
